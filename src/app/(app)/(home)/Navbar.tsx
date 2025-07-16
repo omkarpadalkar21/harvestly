@@ -29,7 +29,7 @@ const NavbarItems = ({ href, children, isActive }: NavbarItemsProps) => {
       variant={"outline"}
       className={cn(
         "bg-transparent hover:bg-transparent rounded-full hover:border-primary border-transparent px-3.5 text-lg",
-        isActive && "bg-black text-white hover:bg-black hover:text-white"
+        isActive && "bg-black text-white hover:bg-black hover:text-white",
       )}
     >
       <Link href={href}>{children}</Link>
@@ -69,7 +69,7 @@ const Navbar = () => {
         <span
           className={cn(
             "font-semibold flex gap-2 items-center",
-            poppins.className
+            poppins.className,
           )}
         >
           <Image

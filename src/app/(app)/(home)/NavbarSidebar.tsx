@@ -38,7 +38,7 @@ const NavbarSidebar = ({ items, open, onOpenChange }: Props) => {
               <span
                 className={cn(
                   "font-semibold flex gap-2 items-center",
-                  poppins.className
+                  poppins.className,
                 )}
               >
                 <Image
