@@ -1,65 +1,82 @@
 "use client";
-import {Button} from "@/components/ui/button";
-import {cn} from "@/lib/utils";
-import {Category} from "@/payload-types";
-import React, {useRef, useState} from "react";
-import {useDropdownPosition} from "@/app/(app)/(home)/search-filters/use-dropdown-position";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import React, { useRef, useState } from "react";
+import { useDropdownPosition } from "@/app/(app)/(home)/search-filters/use-dropdown-position";
 import SubcategoryMenu from "@/app/(app)/(home)/search-filters/SubcategoryMenu";
+import { CustomCategory } from "@/app/(app)/(home)/types";
+import Link from "next/link";
 
 interface Props {
-    category: Category;
-    isActive?: boolean;
-    isNavigationHovered?: boolean;
+  category: CustomCategory;
+  isActive?: boolean;
+  isNavigationHovered?: boolean;
 }
 
 const CategoryDropDown = ({
-                              category,
-                              isActive,
-                              isNavigationHovered,
-                          }: Props) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const {getDropdownPosition} = useDropdownPosition(dropdownRef);
-    const dropdownPositon = useDropdownPosition();
-    const onMouseEnter = () => {
-        if (category.subcategories) {
-            setIsOpen(true);
-        }
-    };
+  category,
+  isActive,
+  isNavigationHovered,
+}: Props) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { getDropdownPosition } = useDropdownPosition(dropdownRef);
+  const dropdownPositon = getDropdownPosition();
 
-    const onMouseLeave = () => setIsOpen(false);
+  const onMouseEnter = () => {
+    setIsHovered(true);
+    if (category.subcategories) {
+      setIsOpen(true);
+    }
+  };
 
-    return (
-        <div
-            className="relative"
-            ref={dropdownRef}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
+  const onMouseLeave = () => {
+    setIsHovered(false);
+    setIsOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    if(category.subcategories?.docs?.length) {
+      setIsOpen(!isOpen);
+    }
+  }
+
+  return (
+    <div
+      className="relative"
+      ref={dropdownRef}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={toggleDropdown}
+    >
+      <div className="relative">
+        <Button
+          variant={"secondary"}
+          className={cn(
+            "h-11 px-4 rounded-full transition-all duration-200",
+            isActive && !isNavigationHovered && "bg-secondary/80",
+            (isOpen || isHovered) && "bg-secondary/80 border border-black/80",
+          )}
         >
-            <div className="relative">
-                <Button
-                    variant={"secondary"}
-                    className={cn(
-                        "h-11 px-4 rounded-full",
-                        isActive && !isNavigationHovered && "bg-secondary/80",
-                    )}
-                >
-                    {category.name}
-                </Button>
-                {category.subcategories && category.subcategories.length > 0 && (
-                    <div
-                        className={cn(
-                            "opacity-0 absolute -bottom-3 w-0 h-0 border-l-[10px] border-r-[10px] border-b-[10px]  border-l-transparent border-r-transparent border-b-black left-1/2 -translate-x-1/2",
-                            isOpen && "opacity-100",
-                        )}
-                    />
-
-                )}
-            </div>
-            <SubcategoryMenu category={category} isOpen={isOpen} position={dropdownPositon}/>
-        </div>
-
-    );
+          <Link href={`/${category.slug}`}>{category.name}</Link>
+        </Button>
+        {category.subcategories?.length > 0 && (
+          <div
+            className={cn(
+              "opacity-0 absolute -bottom-3 w-0 h-0 border-l-[10px] border-r-[10px] border-b-[10px] border-l-transparent border-r-transparent border-b-black/80 left-1/2 -translate-x-1/2 transition-opacity duration-200",
+              (isOpen || isHovered) && "opacity-100",
+            )}
+          />
+        )}
+      </div>
+      <SubcategoryMenu
+        category={category}
+        isOpen={isOpen}
+        position={dropdownPositon}
+      />
+    </div>
+  );
 };
 
 export default CategoryDropDown;

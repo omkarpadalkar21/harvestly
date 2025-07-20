@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import SearchFilters from "./search-filters";
 import configPromise from "@payload-config";
 import { getPayload } from "payload";
+import { CustomCategory } from "@/app/(app)/(home)/types";
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -17,15 +18,16 @@ const Layout = async ({ children }: LayoutProps) => {
     where: { parent: { exists: false } },
     depth: 1, // Populate subcategories, subcateogies.[0] will be a type of category
     pagination: false,
+    sort: "desc"
   });
 
-  const formattedData = data.docs.map((doc) => ({
+  const formattedData: CustomCategory[] = data.docs.map((doc) => ({
     ...doc,
     subcategories: (doc.subcategories?.docs ?? []).map((doc) => ({
       ...(doc as Category), // Because of "depth 1", we are confident that the "doc" will be a type of category
     })),
   }));
-  console.log(formattedData);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

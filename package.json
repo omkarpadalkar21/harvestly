@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "generate:types": "payload generate:types",
-    "db:fresh": "payload migrate:fresh"
+    "db:fresh": "payload migrate:fresh",
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -47,6 +48,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.0",
     "embla-carousel-react": "^8.6.0",
     "graphql": "^16.11.0",
     "input-otp": "^1.4.2",
@@ -68,6 +70,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/bun": "latest",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -75,6 +78,7 @@
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
   }

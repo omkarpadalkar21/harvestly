@@ -52,6 +52,13 @@ function SheetContent({
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left";
 }) {
+  // Check if children include SheetDescription
+  const hasDescription = React.Children.toArray(children).some(
+    (child: any) =>
+      child?.type?.displayName === "SheetDescription" ||
+      child?.type === SheetDescription
+  );
+
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -69,6 +76,7 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
           className,
         )}
+        aria-describedby={hasDescription ? undefined : undefined}
         {...props}
       >
         {children}
@@ -126,6 +134,8 @@ function SheetDescription({
     />
   );
 }
+
+SheetDescription.displayName = "SheetDescription";
 
 export {
   Sheet,
