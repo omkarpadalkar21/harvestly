@@ -1,7 +1,11 @@
-import React from "react";
+"use client";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 const HomePage = () => {
-  return <div>HomePage</div>;
+  const trpc = useTRPC();
+  const categories = useQuery(trpc.categories.getMany.queryOptions());
+  return <div>{JSON.stringify(categories.data, null)}</div>;
 };
 
 export default HomePage;
