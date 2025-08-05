@@ -1,15 +1,14 @@
 "use client";
-import { Category } from "@/payload-types";
-import CategoryDropDown from "./CategoryDropDown";
-import { CustomCategory } from "@/app/(app)/(home)/types";
-import { useEffect, useRef, useState } from "react";
+import CategoriesSidebar from "@/app/(app)/(home)/search-filters/CategoriesSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CatgegoriesGetManyOutput } from "@/modules/categories/types";
 import { ListFilterIcon } from "lucide-react";
-import CategoriesSidebar from "@/app/(app)/(home)/search-filters/CategoriesSidebar";
+import { useEffect, useRef, useState } from "react";
+import CategoryDropDown from "./CategoryDropDown";
 
 interface CategoriesProps {
-  data: CustomCategory[];
+  data: CatgegoriesGetManyOutput;
 }
 
 const Categories = ({ data }: CategoriesProps) => {
@@ -58,8 +57,8 @@ const Categories = ({ data }: CategoriesProps) => {
   }, [data.length]);
   return (
     <div className={"relative h-full"}>
-      <CategoriesSidebar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} data={data} />
-      
+      <CategoriesSidebar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
+
       {/*Hidden div to measure all items*/}
       <div
         ref={measureRef}
@@ -101,8 +100,7 @@ const Categories = ({ data }: CategoriesProps) => {
               "h-11 px-4 rounded-full transition-all duration-200",
               isActiveCategoryHidden && !isAnyHovered && "bg-secondary/80"
             )}
-
-            onClick={()=>setIsSidebarOpen(true)}
+            onClick={() => setIsSidebarOpen(true)}
           >
             View All <ListFilterIcon className={"ml-2"} />
           </Button>
