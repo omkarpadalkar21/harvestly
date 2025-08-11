@@ -1,0 +1,1 @@
+export const authCookie = "harvestly-auth-cookie";
