@@ -1,1 +1,1 @@
-export const authCookie = "harvestly-auth-cookie";
+export const authCookie = "payload-token";
