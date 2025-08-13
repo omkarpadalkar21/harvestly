@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
-import {getPayload} from "payload";
+import { getPayload } from "payload";
 import config from "@payload-config";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,7 +117,7 @@ try {
   await seed();
   console.log("Seeding completed successfully.");
   process.exit(0);
-}catch (error) {
+} catch (error) {
   console.error(error);
   process.exit(1);
 }

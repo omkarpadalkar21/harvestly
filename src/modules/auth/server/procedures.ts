@@ -4,6 +4,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { authCookie } from "@/modules/auth/constants";
 import { loginSchema, registerSchema } from "@/modules/auth/schemas";
+import { generateAuthCookie } from "@/modules/auth/utils";
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
@@ -57,12 +58,9 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      const cookies = await getCookies();
-      cookies.set({
-        name: authCookie,
+      await generateAuthCookie({
+        prefix: ctx.db.config.cookiePrefix,
         value: data.token,
-        httpOnly: true,
-        path: "/",
       });
     }),
   login: baseProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
@@ -81,12 +79,9 @@ export const authRouter = createTRPCRouter({
       });
     }
 
-    const cookies = await getCookies();
-    cookies.set({
-      name: authCookie,
+    await generateAuthCookie({
+      prefix: ctx.db.config.cookiePrefix,
       value: data.token,
-      httpOnly: true,
-      path: "/",
     });
 
     return data;

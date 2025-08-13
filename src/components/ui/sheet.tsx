@@ -56,7 +56,7 @@ function SheetContent({
   const hasDescription = React.Children.toArray(children).some(
     (child: any) =>
       child?.type?.displayName === "SheetDescription" ||
-      child?.type === SheetDescription
+      child?.type === SheetDescription,
   );
 
   return (

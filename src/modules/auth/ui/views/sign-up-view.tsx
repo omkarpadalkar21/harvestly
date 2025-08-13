@@ -1,21 +1,29 @@
 "use client";
-import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-import {Poppins} from "next/font/google";
+import { Poppins } from "next/font/google";
 import React from "react";
-import {useForm} from "react-hook-form";
-import {registerSchema} from "@/modules/auth/schemas";
-import {z} from "zod";
-import {zodResolver} from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { registerSchema } from "@/modules/auth/schemas";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import Image from "next/image";
-import {cn} from "@/lib/utils";
-import {useTRPC} from "@/trpc/client";
-import {useMutation} from "@tanstack/react-query";
-import {toast} from "sonner";
-import {useRouter} from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const poppins = Poppins({
   subsets: ["latin"],
