@@ -1,20 +1,15 @@
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { headers as getHeaders, cookies as getCookies } from "next/headers";
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { authCookie } from "@/modules/auth/constants";
-import { loginSchema, registerSchema } from "@/modules/auth/schemas";
-import { generateAuthCookie } from "@/modules/auth/utils";
+import {baseProcedure, createTRPCRouter} from "@/trpc/init";
+import {headers as getHeaders} from "next/headers";
+import {TRPCError} from "@trpc/server";
+import {loginSchema, registerSchema} from "@/modules/auth/schemas";
+import {generateAuthCookie} from "@/modules/auth/utils";
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
     const headers = await getHeaders();
     return await ctx.db.auth({ headers });
   }),
-  logout: baseProcedure.mutation(async () => {
-    const cookies = await getCookies();
-    cookies.delete(authCookie);
-  }),
+
   register: baseProcedure
     .input(registerSchema)
     .mutation(async ({ input, ctx }) => {
