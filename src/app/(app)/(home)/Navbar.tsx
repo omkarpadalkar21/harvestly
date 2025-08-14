@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 
 import NavbarSidebar from "./NavbarSidebar";
 import { MenuIcon } from "lucide-react";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,7 +34,9 @@ const NavbarItems = ({ href, children, isActive }: NavbarItemsProps) => {
         isActive && "bg-black text-white hover:bg-black hover:text-white",
       )}
     >
-      <Link href={href}>{children}</Link>
+      <Link prefetch href={href}>
+        {children}
+      </Link>
     </Button>
   );
 };
@@ -62,7 +66,10 @@ export const navbarItems = [
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [isSidebarOpen, setisSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const trpc = useTRPC();
+  const session = useQuery(trpc.auth.session.queryOptions());
   return (
     <nav className="flex h-20 border-b justify-between font-medium bg-white">
       <Link href={"/"} className=" flex items-center pl-6">
@@ -84,7 +91,7 @@ const Navbar = () => {
 
       <NavbarSidebar
         open={isSidebarOpen}
-        onOpenChange={setisSidebarOpen}
+        onOpenChange={setIsSidebarOpen}
         items={navbarItems}
       />
       <div className="items-center hidden gap-4 lg:flex">
@@ -97,31 +104,42 @@ const Navbar = () => {
         ))}
       </div>
 
-      <div className="hidden lg:flex p-0">
-        <Button
-          asChild
-          variant="secondary"
-          className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
-        >
-          <Link prefetch href="/sign-in">
-            Login
-          </Link>
-        </Button>
-        <Button
-          asChild
-          className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
-        >
-          <Link prefetch href="/sign-up">
-            Start Selling
-          </Link>
-        </Button>
-      </div>
+      {session.data?.user ? (
+        <div className="hidden lg:flex p-0">
+          <Button
+            asChild
+            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
+          >
+            <Link href="/admin">Dashboard</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="hidden lg:flex p-0">
+          <Button
+            asChild
+            variant="secondary"
+            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
+          >
+            <Link prefetch href="/sign-in">
+              Log In
+            </Link>
+          </Button>
+          <Button
+            asChild
+            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
+          >
+            <Link prefetch href="/sign-up">
+              Start Selling
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <div className="flex lg:hidden items-center justify-center p-3">
         <Button
           variant={"ghost"}
           className="size-12 border-transparent bg-white"
-          onClick={() => setisSidebarOpen(true)}
+          onClick={() => setIsSidebarOpen(true)}
         >
           <MenuIcon className="size-full" />
         </Button>
