@@ -1,6 +1,6 @@
 "use client";
 
-import CategoriesSidebar from "@/app/(app)/(home)/search-filters/CategoriesSidebar";
+import CategoriesSidebar from "@/modules/home/ui/components/search-filters/CategoriesSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BookmarkCheckIcon, ListFilterIcon, SearchIcon } from "lucide-react";
@@ -23,7 +23,7 @@ const SearchInput = ({ disabled }: Props) => {
       <div className="relative w-full">
         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
         <Input
-          className="pl-8 border-black"
+          className="pl-8 border-black bg-white"
           placeholder="Search Products"
           disabled={disabled}
         />

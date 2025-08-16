@@ -7,12 +7,14 @@ interface SubcategoryMenuProps {
   category: CatgegoriesGetManyOutput[1];
   isOpen: boolean;
   position: { top: number; left: number };
+  onSubcategoryClick?: () => void;
 }
 
 const SubcategoryMenu = ({
   category,
   isOpen,
   position,
+  onSubcategoryClick,
 }: SubcategoryMenuProps) => {
   if (!isOpen || !category.subcategories || category.subcategories.length === 0)
     return null;
@@ -38,8 +40,9 @@ const SubcategoryMenu = ({
               href={`/${category.slug}/${subcategory.slug}`}
               key={subcategory.slug}
               className={cn(
-                "w-full text-left p-3 hover:text-white flex justify-between items-center font-medium rounded-xl subcategory-link",
+                "w-full text-left p-3 hover:text-white flex justify-between items-center font-medium rounded-xl subcategory-link"
               )}
+              onClick={onSubcategoryClick}
             >
               {subcategory.name}
             </Link>

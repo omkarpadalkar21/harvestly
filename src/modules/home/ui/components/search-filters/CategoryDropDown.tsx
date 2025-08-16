@@ -1,11 +1,11 @@
 "use client";
-import SubcategoryMenu from "@/app/(app)/(home)/search-filters/SubcategoryMenu";
-import { useDropdownPosition } from "@/app/(app)/(home)/search-filters/use-dropdown-position";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { CatgegoriesGetManyOutput } from "@/modules/categories/types";
+import SubcategoryMenu from "@/modules/home/ui/components/search-filters/SubcategoryMenu";
+import {useDropdownPosition} from "@/modules/home/ui/components/search-filters/use-dropdown-position";
+import {Button} from "@/components/ui/button";
+import {cn} from "@/lib/utils";
+import {CatgegoriesGetManyOutput} from "@/modules/categories/types";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import {useRef, useState} from "react";
 
 interface Props {
   category: CatgegoriesGetManyOutput[1];
@@ -13,11 +13,7 @@ interface Props {
   isNavigationHovered?: boolean;
 }
 
-const CategoryDropDown = ({
-  category,
-  isActive,
-  isNavigationHovered,
-}: Props) => {
+const CategoryDropDown = ({ category, isActive }: Props) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -42,6 +38,11 @@ const CategoryDropDown = ({
     }
   };
 
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setIsHovered(false);
+  };
+
   return (
     <div
       className="relative"
@@ -54,9 +55,10 @@ const CategoryDropDown = ({
         <Button
           variant={"secondary"}
           className={cn(
-            "h-11 px-4 rounded-full transition-all duration-200",
-            isActive && !isNavigationHovered && "bg-secondary/80",
-            (isOpen || isHovered) && "bg-secondary/80 border border-black/80",
+            "h-11 px-4 rounded-full transition-all duration-200 border",
+            isActive && !(isOpen || isHovered) && "bg-secondary/80",
+            (isOpen || isHovered || isActive) &&
+              "bg-secondary/80 border-black",
           )}
         >
           <Link href={`/${category.slug}`}>{category.name}</Link>
@@ -74,6 +76,7 @@ const CategoryDropDown = ({
         category={category}
         isOpen={isOpen}
         position={dropdownPositon}
+        onSubcategoryClick={closeDropdown}
       />
     </div>
   );

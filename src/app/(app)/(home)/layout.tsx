@@ -1,9 +1,9 @@
 import { getQueryClient, trpc } from "@/trpc/server";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 
-import Footer from "./Footer";
-import Navbar from "./Navbar";
-import { SearchFilters, SearchFiltersLoading } from "./search-filters";
+import Footer from "../../../modules/home/ui/components/Footer";
+import Navbar from "../../../modules/home/ui/components/Navbar";
+import { SearchFilters, SearchFiltersLoading } from "../../../modules/home/ui/components/search-filters";
 import { Suspense } from "react";
 
 interface LayoutProps {
@@ -20,7 +20,7 @@ const Layout = async ({ children }: LayoutProps) => {
           <SearchFilters />
         </Suspense>
       </HydrationBoundary>
-      <div className="flex-1 bg-[#f3f3f3]">{children}</div>
+      <div className="flex-1 ">{children}</div>
       <Footer />
     </div>
   );
