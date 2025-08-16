@@ -8,7 +8,7 @@ export const categoriesRouter = createTRPCRouter({
       where: { parent: { exists: false } },
       depth: 1, // Populate subcategories, subcateogies.[0] will be a type of category
       pagination: false,
-      sort: "desc",
+      sort: "createdAt",
     });
 
     const formattedData = data.docs.map((doc) => ({

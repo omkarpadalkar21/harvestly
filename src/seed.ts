@@ -23,7 +23,7 @@ export const categories = [
   },
   {
     name: "Fruits",
-    color: "#d97706",
+    color: "#fdb833",
     slug: "fruits",
     subcategories: [
       { name: "Citrus", slug: "citrus" },
@@ -33,9 +33,21 @@ export const categories = [
       { name: "Pomes (Apples & Pears)", slug: "pomes" },
     ],
   },
+
+  {
+    name: "Herbs & Spices",
+    color: "#DC143C",
+    slug: "herbs-spices",
+    subcategories: [
+      { name: "Fresh Herbs", slug: "fresh-herbs" },
+      { name: "Dried Spices", slug: "dried-spices" },
+      { name: "Seeds & Seasonings", slug: "seeds" },
+      { name: "Masalas", slug: "masalas" },
+    ],
+  },
   {
     name: "Grains & Pulses",
-    color: "#ca8a04",
+    color: "#ffa13e",
     slug: "grains-pulses",
     subcategories: [
       { name: "Rice & Millets", slug: "rice-millets" },
@@ -43,17 +55,6 @@ export const categories = [
       { name: "Lentils (Dal)", slug: "lentils" },
       { name: "Beans & Peas", slug: "beans-peas" },
       { name: "Flours & Meal", slug: "flours" },
-    ],
-  },
-  {
-    name: "Herbs & Spices",
-    color: "#10b981",
-    slug: "herbs-spices",
-    subcategories: [
-      { name: "Fresh Herbs", slug: "fresh-herbs" },
-      { name: "Dried Spices", slug: "dried-spices" },
-      { name: "Seeds & Seasonings", slug: "seeds" },
-      { name: "Masalas", slug: "masalas" },
     ],
   },
   {
@@ -69,7 +70,7 @@ export const categories = [
   },
   {
     name: "Organic Specials",
-    color: "#65a30d",
+    color: "#A1E44D",
     slug: "organic",
     subcategories: [
       { name: "Organic Vegetables", slug: "organic-vegetables" },

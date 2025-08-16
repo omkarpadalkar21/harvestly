@@ -1,17 +1,22 @@
 "use client";
-import CategoriesSidebar from "@/app/(app)/(home)/search-filters/CategoriesSidebar";
+import CategoriesSidebar from "@/modules/home/ui/components/search-filters/CategoriesSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CatgegoriesGetManyOutput } from "@/modules/categories/types";
 import { ListFilterIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import CategoryDropDown from "./CategoryDropDown";
+import { useParams } from "next/navigation";
 
 interface CategoriesProps {
   data: CatgegoriesGetManyOutput;
 }
 
 const Categories = ({ data }: CategoriesProps) => {
+  const params = useParams();
+  const categoryParam = params.category as string | undefined;
+  const activeCategory = categoryParam || "all";
+
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const viewAllRef = useRef<HTMLDivElement>(null);
@@ -19,8 +24,6 @@ const Categories = ({ data }: CategoriesProps) => {
   const [visibleCount, setVisibleCount] = useState(data.length);
   const [isAnyHovered, setIsAnyHovered] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const activeCategory = "all";
 
   const activeCategoryIndex = data.findIndex((c) => c.slug === activeCategory);
   const isActiveCategoryHidden =
@@ -79,7 +82,7 @@ const Categories = ({ data }: CategoriesProps) => {
       {/*Visible items*/}
       <div
         ref={containerRef}
-        className={"flex flex-nowrap items-center justify-evenly"}
+        className={"flex flex-nowrap items-center justify-around"}
         onMouseEnter={() => setIsAnyHovered(true)}
         onMouseLeave={() => setIsAnyHovered(false)}
       >
@@ -97,8 +100,8 @@ const Categories = ({ data }: CategoriesProps) => {
           <Button
             variant={"secondary"}
             className={cn(
-              "h-11 px-4 rounded-full transition-all duration-200",
-              isActiveCategoryHidden && !isAnyHovered && "bg-secondary/80",
+              "h-11 px-4 rounded-full transition-all duration-200 border",
+              isActiveCategoryHidden && !isAnyHovered && "bg-secondary/80"
             )}
             onClick={() => setIsSidebarOpen(true)}
           >
