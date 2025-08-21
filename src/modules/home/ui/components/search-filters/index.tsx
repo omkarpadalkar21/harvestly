@@ -1,10 +1,10 @@
 "use client";
-import {useTRPC} from "@/trpc/client";
-import {useSuspenseQuery} from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import Categories from "./Categories";
 import SearchInput from "./SearchInput";
-import {useParams} from "next/navigation";
-import {DEFAULT_BG_COLOR} from "@/modules/home/constants";
+import { useParams } from "next/navigation";
+import { DEFAULT_BG_COLOR } from "@/modules/home/constants";
 import BreadcrumbNavigation from "@/modules/home/ui/components/search-filters/BreadcrumbNavigation";
 
 export const SearchFilters = () => {
@@ -21,17 +21,25 @@ export const SearchFilters = () => {
   const activeCategoryName = activeCategoryData?.name || null;
 
   const activeSubcategory = params.subcategory as string | undefined;
-  const activeSubcategoryName = activeCategoryData?.subcategories?.find(
-    (subcategory) => subcategory.slug === activeSubcategory
-  )?.name || null;
+  const activeSubcategoryName =
+    activeCategoryData?.subcategories?.find(
+      (subcategory) => subcategory.slug === activeSubcategory,
+    )?.name || null;
 
   return (
-    <div className="px-4 lg:px-12 py-8 border-b flex flex-col gap-4 w-full" style={{backgroundColor:activeCategoryColour}}>
+    <div
+      className="px-4 lg:px-12 py-8 border-b flex flex-col gap-4 w-full"
+      style={{ backgroundColor: activeCategoryColour }}
+    >
       <SearchInput />
       <div className={"hidden lg:block"}>
         <Categories data={data} />
       </div>
-      <BreadcrumbNavigation activeCategory={activeCategory} activeCategoryName={activeCategoryName} activeSubcategoryName={activeSubcategoryName} />
+      <BreadcrumbNavigation
+        activeCategory={activeCategory}
+        activeCategoryName={activeCategoryName}
+        activeSubcategoryName={activeSubcategoryName}
+      />
     </div>
   );
 };

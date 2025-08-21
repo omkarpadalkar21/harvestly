@@ -41,8 +41,8 @@ const SearchInput = ({ disabled }: Props) => {
       {session.data?.user && (
         <Button asChild>
           <Link href={"/library"}>
-            <BookmarkCheckIcon  />
-              Library
+            <BookmarkCheckIcon />
+            Library
           </Link>
         </Button>
       )}

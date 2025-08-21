@@ -22,6 +22,7 @@ export const Products: CollectionConfig = {
       name: "category",
       type: "relationship",
       relationTo: "categories",
+      required: true,
       hasMany: false,
       filterOptions: {
         parent: {
@@ -35,7 +36,8 @@ export const Products: CollectionConfig = {
       relationTo: "categories",
       hasMany: false,
       admin: {
-        condition: (data) => data?.category,
+        description:
+          "Select a subcategory (only shown when category is selected)",
       },
       filterOptions: ({ data }) => {
         if (data?.category) {
@@ -46,6 +48,17 @@ export const Products: CollectionConfig = {
           };
         }
         return false;
+      },
+      validate: (value, { data }) => {
+        // Allow null/undefined values
+        if (value === null || value === undefined) {
+          return true;
+        }
+        // If a value is provided, ensure it's a valid string
+        if (typeof value === "string" && value.length > 0) {
+          return true;
+        }
+        return "Subcategory must be a valid selection";
       },
     },
     {
@@ -100,11 +113,17 @@ export const Products: CollectionConfig = {
     ],
     beforeChange: [
       ({ data, originalDoc }) => {
-        // Clear subcategory if category has changed
-        if (data?.category !== originalDoc?.category) {
+        // Clear subcategory if category has changed and we have an existing document
+        if (originalDoc?.id && data?.category !== originalDoc?.category) {
+          console.log("Clearing subcategory because category changed");
           data.subcategory = null;
         }
         return data;
+      },
+    ],
+    afterRead: [
+      ({ doc }) => {
+        return doc;
       },
     ],
   },

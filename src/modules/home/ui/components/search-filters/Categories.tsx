@@ -101,7 +101,7 @@ const Categories = ({ data }: CategoriesProps) => {
             variant={"secondary"}
             className={cn(
               "h-11 px-4 rounded-full transition-all duration-200 border",
-              isActiveCategoryHidden && !isAnyHovered && "bg-secondary/80"
+              isActiveCategoryHidden && !isAnyHovered && "bg-secondary/80",
             )}
             onClick={() => setIsSidebarOpen(true)}
           >
