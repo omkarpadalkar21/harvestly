@@ -6,7 +6,7 @@ import Navbar from "../../../modules/home/ui/components/Navbar";
 import {
   SearchFilters,
   SearchFiltersLoading,
-} from "../../../modules/home/ui/components/search-filters";
+} from "@/modules/home/ui/components/search-filters";
 import { Suspense } from "react";
 
 interface LayoutProps {
@@ -23,7 +23,7 @@ const Layout = async ({ children }: LayoutProps) => {
           <SearchFilters />
         </Suspense>
       </HydrationBoundary>
-      <div className="flex-1 ">{children}</div>
+      <div className="flex-1 bg-muted">{children}</div>
       <Footer />
     </div>
   );
