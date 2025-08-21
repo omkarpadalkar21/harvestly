@@ -1,11 +1,11 @@
 "use client";
 import SubcategoryMenu from "@/modules/home/ui/components/search-filters/SubcategoryMenu";
-import {useDropdownPosition} from "@/modules/home/ui/components/search-filters/use-dropdown-position";
-import {Button} from "@/components/ui/button";
-import {cn} from "@/lib/utils";
-import {CatgegoriesGetManyOutput} from "@/modules/categories/types";
+import { useDropdownPosition } from "@/modules/home/ui/components/search-filters/use-dropdown-position";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { CatgegoriesGetManyOutput } from "@/modules/categories/types";
 import Link from "next/link";
-import {useRef, useState} from "react";
+import { useRef, useState } from "react";
 
 interface Props {
   category: CatgegoriesGetManyOutput[1];
@@ -57,8 +57,7 @@ const CategoryDropDown = ({ category, isActive }: Props) => {
           className={cn(
             "h-11 px-4 rounded-full transition-all duration-200 border",
             isActive && !(isOpen || isHovered) && "bg-secondary/80",
-            (isOpen || isHovered || isActive) &&
-              "bg-secondary/80 border-black",
+            (isOpen || isHovered || isActive) && "bg-secondary/80 border-black",
           )}
         >
           <Link href={`/${category.slug}`}>{category.name}</Link>

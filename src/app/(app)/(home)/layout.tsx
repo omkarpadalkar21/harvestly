@@ -3,7 +3,10 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 
 import Footer from "../../../modules/home/ui/components/Footer";
 import Navbar from "../../../modules/home/ui/components/Navbar";
-import { SearchFilters, SearchFiltersLoading } from "../../../modules/home/ui/components/search-filters";
+import {
+  SearchFilters,
+  SearchFiltersLoading,
+} from "../../../modules/home/ui/components/search-filters";
 import { Suspense } from "react";
 
 interface LayoutProps {
