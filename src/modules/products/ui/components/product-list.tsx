@@ -2,6 +2,7 @@
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import React from "react";
+import { useProductFilters } from "@/modules/hooks/use-product-filters";
 
 interface Props {
   category?: string;
@@ -9,11 +10,13 @@ interface Props {
 }
 
 export const ProductList = ({ category, subcategory }: Props) => {
+  const [filters] = useProductFilters();
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
     trpc.products.getMany.queryOptions({
       category,
       subcategory,
+      ...filters,
     }),
   );
   return (
@@ -23,7 +26,10 @@ export const ProductList = ({ category, subcategory }: Props) => {
       }
     >
       {data?.docs.map((product) => (
-        <div key={product.id} className={"border border-black rounded-md bg-white p-4"}>
+        <div
+          key={product.id}
+          className={"border border-black rounded-md bg-white p-4"}
+        >
           <h2 className={"text-xl font-medium"}>{product.name}</h2>
           <p>₹{product.price}</p>
         </div>
