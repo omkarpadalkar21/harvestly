@@ -32,10 +32,25 @@ const ProductFilter = ({ title, className, children }: ProductFiltersProps) => {
 };
 
 const ProductFilters = () => {
-  const [filters, setFilers] = useProductFilters();
+  const [filters, setFilters] = useProductFilters();
+
+  const hasAnyFilters = Object.entries(filters).some(([, value]) => {
+    if (typeof value === "string") {
+      return value !== "";
+    }
+
+    return value !== null;
+  });
+
+  const onClear = () => {
+    setFilters({
+      minPrice: "",
+      maxPrice: "",
+    });
+  };
 
   const onChange = (key: keyof typeof filters, value: unknown) => {
-    setFilers({ ...filters, [key]: value });
+    setFilters({ ...filters, [key]: value });
   };
   return (
     <div className={"rounded-md bg-white"}>
@@ -45,20 +60,26 @@ const ProductFilters = () => {
         }
       >
         <p className={"font-medium"}>Filters</p>
-        <button
-          className={"underline"}
-          onClick={() => console.log("")}
-          type={"button"}
-        >
-          Clear
-        </button>
+        {hasAnyFilters && (
+          <button
+            className={"underline cursor-pointer"}
+            onClick={() => onClear()}
+            type={"button"}
+          >
+            Clear
+          </button>
+        )}
       </div>
       <ProductFilter title={"Price"}>
         <PriceFilter
           minPrice={filters.minPrice}
           maxPrice={filters.maxPrice}
-          onMinPriceChange={(value) => {onChange("minPrice", value);}}
-          onMaxPriceChange={(value) => {onChange("maxPrice", value);}}
+          onMinPriceChange={(value) => {
+            onChange("minPrice", value);
+          }}
+          onMaxPriceChange={(value) => {
+            onChange("maxPrice", value);
+          }}
         />
       </ProductFilter>
     </div>
