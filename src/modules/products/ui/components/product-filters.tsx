@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PriceFilter from "@/modules/products/ui/components/price-filter";
+import { useProductFilters } from "@/modules/hooks/use-product-filters";
 
 interface ProductFiltersProps {
   title: string;
@@ -30,10 +32,19 @@ const ProductFilter = ({ title, className, children }: ProductFiltersProps) => {
 };
 
 const ProductFilters = () => {
+  const [filters, setFilers] = useProductFilters();
+
+  const onChange = (key: keyof typeof filters, value: unknown) => {
+    setFilers({ ...filters, [key]: value });
+  };
   return (
     <div className={"rounded-md bg-white"}>
-      <div className={"p-4 border-black border-b flex items-center justify-between"}>
-        <p className={"font-mediumP"}>Filters</p>
+      <div
+        className={
+          "p-4 border-black border-b flex items-center justify-between"
+        }
+      >
+        <p className={"font-medium"}>Filters</p>
         <button
           className={"underline"}
           onClick={() => console.log("")}
@@ -43,7 +54,12 @@ const ProductFilters = () => {
         </button>
       </div>
       <ProductFilter title={"Price"}>
-        <p>Price Filter</p>
+        <PriceFilter
+          minPrice={filters.minPrice}
+          maxPrice={filters.maxPrice}
+          onMinPriceChange={(value) => {onChange("minPrice", value);}}
+          onMaxPriceChange={(value) => {onChange("maxPrice", value);}}
+        />
       </ProductFilter>
     </div>
   );
