@@ -35,7 +35,13 @@ const ProductFilter = ({ title, className, children }: ProductFiltersProps) => {
 const ProductFilters = () => {
   const [filters, setFilters] = useProductFilters();
 
-  const hasAnyFilters = Object.entries(filters).some(([, value]) => {
+  const hasAnyFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === "sort") return false;
+
+    if(Array.isArray(value)) {
+        return value.length > 0;
+    }
+
     if (typeof value === "string") {
       return value !== "";
     }
@@ -47,14 +53,13 @@ const ProductFilters = () => {
     setFilters({
       minPrice: "",
       maxPrice: "",
+      tags: [],
     });
   };
 
   const onChange = (key: keyof typeof filters, value: unknown) => {
     setFilters({ ...filters, [key]: value });
   };
-
-
 
   return (
     <div className={"rounded-md bg-white"}>
