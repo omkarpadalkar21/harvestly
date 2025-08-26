@@ -5,6 +5,7 @@ import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PriceFilter from "@/modules/products/ui/components/price-filter";
 import { useProductFilters } from "@/modules/hooks/use-product-filters";
+import TagsFilter from "@/modules/products/ui/components/tags-filter";
 
 interface ProductFiltersProps {
   title: string;
@@ -52,6 +53,9 @@ const ProductFilters = () => {
   const onChange = (key: keyof typeof filters, value: unknown) => {
     setFilters({ ...filters, [key]: value });
   };
+
+
+
   return (
     <div className={"rounded-md bg-white"}>
       <div
@@ -80,6 +84,12 @@ const ProductFilters = () => {
           onMaxPriceChange={(value) => {
             onChange("maxPrice", value);
           }}
+        />
+      </ProductFilter>
+      <ProductFilter title={"Tags"}>
+        <TagsFilter
+          value={filters.tags}
+          onChange={(value) => onChange("tags", value)}
         />
       </ProductFilter>
     </div>
