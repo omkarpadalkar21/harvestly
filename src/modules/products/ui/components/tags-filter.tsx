@@ -27,7 +27,7 @@ const TagsFilter = ({ value, onChange }: Props) => {
 
   const onClick = (tag: string) => {
     if (value?.includes(tag)) {
-      onChange(value.filter((t) => t !== tag || []));
+      onChange(value?.filter((t) => t !== tag) || []);
     } else {
       onChange([...(value || []), tag]);
     }
@@ -62,7 +62,7 @@ const TagsFilter = ({ value, onChange }: Props) => {
           disabled={isFetchingNextPage}
           onClick={() => fetchNextPage()}
           className={
-            "underline font-medium justify-start text-start disabled:opacity-50"
+            "underline font-medium justify-start text-start disabled:opacity-50 cursor-pointer"
           }
         >
           Load more...
