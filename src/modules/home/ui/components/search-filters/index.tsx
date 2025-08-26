@@ -17,7 +17,7 @@ export const SearchFilters = () => {
   const activeCategoryData = data.find(
     (category) => category.slug === activeCategory,
   );
-  const activeCategoryColour = activeCategoryData?.colour || DEFAULT_BG_COLOR;
+  const activeCategoryColour = activeCategoryData?.colour || "#FFF";
   const activeCategoryName = activeCategoryData?.name || null;
 
   const activeSubcategory = params.subcategory as string | undefined;
