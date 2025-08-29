@@ -38,8 +38,8 @@ const ProductFilters = () => {
   const hasAnyFilters = Object.entries(filters).some(([key, value]) => {
     if (key === "sort") return false;
 
-    if(Array.isArray(value)) {
-        return value.length > 0;
+    if (Array.isArray(value)) {
+      return value.length > 0;
     }
 
     if (typeof value === "string") {
@@ -62,7 +62,7 @@ const ProductFilters = () => {
   };
 
   return (
-    <div className={"rounded-md bg-white"}>
+    <div className={"overflow-hidden"}>
       <div
         className={
           "p-4 border-black border-b flex items-center justify-between"
