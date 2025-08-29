@@ -197,6 +197,16 @@ export interface Product {
    * Price in ₹
    */
   price: number;
+  /**
+   * Specify the quantity and unit for this product
+   */
+  quantity: {
+    /**
+     * Enter the quantity amount (e.g., 1, 500, etc.)
+     */
+    amount: number;
+    unit: 'kg' | 'g' | 'l' | 'ml' | 'pc' | 'pack' | 'other';
+  };
   category: string | Category;
   /**
    * Select a subcategory (only shown when category is selected)
@@ -351,6 +361,12 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   price?: T;
+  quantity?:
+    | T
+    | {
+        amount?: T;
+        unit?: T;
+      };
   category?: T;
   subcategory?: T;
   tags?: T;

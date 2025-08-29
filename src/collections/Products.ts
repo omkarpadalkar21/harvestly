@@ -19,6 +19,37 @@ export const Products: CollectionConfig = {
       required: true,
     },
     {
+      name: "quantity",
+      type: "group",
+      label: "Quantity",
+      fields: [
+        {
+          name: "amount",
+          type: "number",
+          required: true,
+          admin: {
+            description: "Enter the quantity amount (e.g., 1, 500, etc.)",
+          },
+        },
+        {
+          name: "unit",
+          type: "select",
+          required: true,
+          options: [
+            { label: "Kilogram (kg)", value: "kg" },
+            { label: "Gram (g)", value: "g" },
+            { label: "Litre (l)", value: "l" },
+            { label: "Millilitre (ml)", value: "ml" },
+            { label: "Piece (pc)", value: "pc" },
+            { label: "Pack", value: "pack" },
+            { label: "Other", value: "other" },
+          ],
+        },
+      ],
+      required: true,
+      admin: { description: "Specify the quantity and unit for this product" },
+    },
+    {
       name: "category",
       type: "relationship",
       relationTo: "categories",
