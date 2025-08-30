@@ -6,14 +6,13 @@ import Link from "next/link";
 interface SubcategoryMenuProps {
   category: CatgegoriesGetManyOutput[1];
   isOpen: boolean;
-  position: { top: number; left: number };
   onSubcategoryClick?: () => void;
 }
 
 const SubcategoryMenu = ({
   category,
   isOpen,
-  position,
+
   onSubcategoryClick,
 }: SubcategoryMenuProps) => {
   if (!isOpen || !category.subcategories || category.subcategories.length === 0)
@@ -22,10 +21,7 @@ const SubcategoryMenu = ({
   const backgroundColor = category.colour || "#f5f5f5";
 
   return (
-    <div
-      className={"fixed z-10"}
-      style={{ top: position.top, left: position.left }}
-    >
+    <div className={"absolute z-10"} style={{ top: "100%", left: 0 }}>
       {/*Invisible bridge to maintain hover*/}
       <div className={"h-3 w-60"} />
       <div
