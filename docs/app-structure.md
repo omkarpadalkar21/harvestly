@@ -99,8 +99,8 @@ The main content area containing product listings, categories, and static pages.
 
 #### Dynamic Routes:
 
-- `[category]`: Displays products filtered by category
-- `[category]/[subcategory]`: Shows products filtered by subcategory
+- `[category]`: Displays products filtered by category using ProductListView
+- `[category]/[subcategory]`: Shows products filtered by subcategory using ProductListView with both category and subcategory parameters
 
 ### `(payload)` - Payload CMS Admin
 
@@ -187,8 +187,9 @@ my-route/
 ### Data Management
 
 - **tRPC Integration**: Type-safe API calls throughout the app
-- **React Query**: Server state management with caching
+- **React Query**: Server state management with caching and infinite queries
 - **Hydration**: SSR data hydration for optimal performance
+- **Pagination**: Infinite scroll with load more functionality
 
 ## Styling and UI
 

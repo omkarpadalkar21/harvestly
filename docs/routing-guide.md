@@ -50,24 +50,28 @@ The admin route group contains Payload CMS admin interface.
 
 #### `/[category]` - Category Listing
 
-- **Purpose**: Displays products filtered by category
+- **Purpose**: Displays products filtered by category using ProductListView
 - **Example**: `/vegetables`, `/fruits`, `/herbs-spices`
 - **Parameters**: `category` (string) - Category slug
 - **Features**:
-  - Product grid filtered by category
-  - Category information display
-  - Subcategory navigation
+  - Product grid filtered by category with infinite scroll
+  - ProductFilters sidebar for advanced filtering
+  - ProductSort for ordering options
+  - Responsive layout with 2-column grid on small devices
   - Breadcrumb navigation
 
 #### `/[category]/[subcategory]` - Subcategory Listing
 
-- **Purpose**: Displays products filtered by subcategory
+- **Purpose**: Displays products filtered by subcategory using ProductListView
 - **Example**: `/vegetables/leafy-greens`, `/fruits/citrus`
 - **Parameters**:
   - `category` (string) - Parent category slug
   - `subcategory` (string) - Subcategory slug
 - **Features**:
-  - Product grid filtered by subcategory
+  - Product grid filtered by subcategory with infinite scroll
+  - ProductFilters sidebar for advanced filtering
+  - ProductSort for ordering options
+  - Responsive layout with 2-column grid on small devices
   - Parent category context
   - Breadcrumb navigation
   - Related subcategories
@@ -231,7 +235,9 @@ import Link from 'next/link';
 - **Search**: `?search=keyword`
 - **Sorting**: `?sort=price&order=asc`
 - **Filtering**: `?category=vegetables&subcategory=leafy-greens`
-- **Pagination**: `?page=2&limit=20`
+- **Pagination**: Infinite scroll with load more (no URL parameters)
+- **Price Range**: `?minPrice=100&maxPrice=500`
+- **Tags**: `?tags=organic,fresh,local`
 
 #### URL State with Nuqs
 
