@@ -1,6 +1,5 @@
 "use client";
 import SubcategoryMenu from "@/modules/home/ui/components/search-filters/SubcategoryMenu";
-import { useDropdownPosition } from "@/modules/home/ui/components/search-filters/use-dropdown-position";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CatgegoriesGetManyOutput } from "@/modules/categories/types";
@@ -17,8 +16,6 @@ const CategoryDropDown = ({ category, isActive }: Props) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { getDropdownPosition } = useDropdownPosition(dropdownRef);
-  const dropdownPositon = getDropdownPosition();
 
   const onMouseEnter = () => {
     setIsHovered(true);
@@ -74,7 +71,6 @@ const CategoryDropDown = ({ category, isActive }: Props) => {
       <SubcategoryMenu
         category={category}
         isOpen={isOpen}
-        position={dropdownPositon}
         onSubcategoryClick={closeDropdown}
       />
     </div>
