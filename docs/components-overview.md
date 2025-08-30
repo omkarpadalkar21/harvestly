@@ -128,29 +128,63 @@ void queryClient.prefetchQuery(trpc.categories.getMany.queryOptions());
 
 ## Product Display Components
 
-### Product List (`src/modules/products/ui/components/product-list.tsx`)
+### ProductListView (`src/modules/products/ui/views/product-list-view.tsx`)
 
-**Purpose**: Displays products in a grid or list format.
+**Purpose**: Unified view component for displaying products with filters and sorting.
 
 **Features**:
 
-- **Grid Layout**: Responsive product grid
-- **Product Cards**: Individual product display with images, prices, and details
-- **Pagination**: Load more or paginated results
+- **Layout Management**: Handles the overall product page layout
+- **Filter Integration**: Integrates ProductFilters sidebar
+- **Sorting**: Includes ProductSort component for product ordering
+- **Responsive Grid**: Adapts layout for different screen sizes
+- **Reusable**: Used by both category and subcategory pages
+
+**Layout Structure**:
+
+- Header with title and sorting options
+- Sidebar with filters (2 columns on large screens)
+- Main content area with product grid (4-6 columns on large screens)
+
+### Product List (`src/modules/products/ui/components/product-list.tsx`)
+
+**Purpose**: Displays products in a grid or list format with infinite scroll pagination.
+
+**Features**:
+
+- **Grid Layout**: Responsive product grid with 2 columns on small devices
+- **Product Cards**: Individual product display with images, prices, quantity, and details
+- **Infinite Scroll**: Load more functionality with React Query infinite queries
 - **Filtering**: Integration with search and category filters
 - **Loading States**: Skeleton loading for better UX
+- **Empty State**: Handles no products found scenario
+
+**Key Features**:
+
+- Uses `useSuspenseInfiniteQuery` for efficient data loading
+- Configurable page size via `DEFAULT_LIMIT` constant
+- Load more button with loading states
+- Responsive grid: 1 col (mobile), 2 cols (sm), 2 cols (md), 2 cols (lg), 3 cols (xl), 4 cols (2xl)
 
 ### Product Card (`src/modules/products/ui/components/product-card.tsx`)
 
-**Purpose**: Individual product display component.
+**Purpose**: Individual product display component with enhanced product information.
 
 **Features**:
 
-- **Product Image**: High-quality product photos
-- **Product Information**: Name, description, price, and category
-- **Perishability Indicator**: Visual indicator for product shelf life
-- **Add to Cart**: Quick purchase functionality
-- **Hover Effects**: Interactive design elements
+- **Product Image**: High-quality product photos with aspect-square ratio
+- **Product Information**: Name, price in INR (₹), quantity with units, and author details
+- **Rating Display**: Star rating with review count
+- **Hover Effects**: Subtle shadow transition on hover
+- **Responsive Design**: Optimized for mobile and desktop viewing
+- **Navigation**: Links to individual product pages (`/products/${id}`)
+
+**Product Details**:
+
+- **Quantity**: Displays amount and unit (kg, g, l, ml, pc, pack, other)
+- **Price**: Indian Rupee (₹) formatting in bordered container
+- **Author**: Username with optional profile image
+- **Reviews**: Star rating system with review count
 
 ## Filter Components
 
@@ -228,7 +262,8 @@ return new Intl.NumberFormat("en-IN", {
 ### Loading Components
 
 **SearchFiltersLoading**: Skeleton loading for search interface
-**ProductListLoading**: Loading state for product lists
+**ProductListLoading**: Skeleton loading for product lists with ProductCardSkeleton
+**ProductCardSkeleton**: Individual product card loading state
 **CategoryLoading**: Loading state for category data
 
 ### Error Components
@@ -260,13 +295,36 @@ return new Intl.NumberFormat("en-IN", {
 - **Brand Integration**: Harvestly branding in admin
 - **Responsive Design**: Mobile-friendly admin interface
 
+## Data Structure Updates
+
+### Product Schema Enhancements
+
+**New Fields Added**:
+
+- **Quantity Object**:
+  - `amount`: Numeric quantity value
+  - `unit`: Measurement unit (kg, g, l, ml, pc, pack, other)
+- **Enhanced Product Information**:
+  - Price in Indian Rupees (₹)
+  - Author information with profile images
+  - Review rating system
+  - Perishability indicators
+
+**Collection Configuration**:
+
+- Products collection updated with quantity group field
+- Required fields for amount and unit
+- Admin interface descriptions for better content management
+
 ## Performance Considerations
 
 ### Data Fetching
 
 - **Prefetching**: Critical data prefetched at layout level
 - **Caching**: React Query caching for optimal performance
+- **Infinite Queries**: Efficient pagination with load more functionality
 - **Suspense**: Loading states for better user experience
+- **Pagination**: Configurable page size via DEFAULT_LIMIT constant
 
 ### Code Splitting
 
