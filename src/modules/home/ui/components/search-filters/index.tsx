@@ -15,7 +15,7 @@ export const SearchFilters = () => {
   const categoryParam = params.category as string | undefined;
   const activeCategory = categoryParam || "all";
   const activeCategoryData = data.find(
-    (category) => category.slug === activeCategory,
+    (category) => category.slug === activeCategory
   );
   const activeCategoryColour = activeCategoryData?.colour || "#FFF";
   const activeCategoryName = activeCategoryData?.name || null;
@@ -23,12 +23,12 @@ export const SearchFilters = () => {
   const activeSubcategory = params.subcategory as string | undefined;
   const activeSubcategoryName =
     activeCategoryData?.subcategories?.find(
-      (subcategory) => subcategory.slug === activeSubcategory,
+      (subcategory) => subcategory.slug === activeSubcategory
     )?.name || null;
 
   return (
     <div
-      className="px-4 lg:px-12 py-8 border-b flex flex-col gap-4 w-full"
+      className="px-4 lg:px-12 py-8 border-b border-black flex flex-col gap-4 w-full"
       style={{ backgroundColor: activeCategoryColour }}
     >
       <SearchInput />

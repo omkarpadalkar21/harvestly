@@ -9,13 +9,13 @@ const poppins = Poppins({
 
 const Footer = () => {
   return (
-    <footer className="font-medium border-t p-6 bg-white text-muted-foreground">
+    <footer className="font-medium border-t border-black p-6 bg-white text-muted-foreground">
       <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start gap-6 md:items-center">
         <div>
           <span
             className={cn(
               "font-semibold flex gap-2 items-center",
-              poppins.className,
+              poppins.className
             )}
           >
             <Image
