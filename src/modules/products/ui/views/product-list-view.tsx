@@ -9,9 +9,10 @@ import {
 interface Props {
   category?: string;
   subcategory?: string;
+  tenantSubdomain?: string;
 }
 
-const ProductListView = ({ category, subcategory }: Props) => {
+const ProductListView = ({ category, subcategory, tenantSubdomain }: Props) => {
   return (
     <div className={"px-4 lg:px-12 py-8 flex flex-col gap-4"}>
       <div
@@ -38,7 +39,11 @@ const ProductListView = ({ category, subcategory }: Props) => {
         </div>
         <div className={"lg:col-span-4 xl:col-span-6"}>
           <Suspense fallback={<ProductListLoading />}>
-            <ProductList category={category} subcategory={subcategory} />
+            <ProductList
+              category={category}
+              subcategory={subcategory}
+              tenantSubdomain={tenantSubdomain}
+            />
           </Suspense>
         </div>
       </div>
