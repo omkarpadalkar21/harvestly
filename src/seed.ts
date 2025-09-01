@@ -90,6 +90,31 @@ const seed = async () => {
   });
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
+  //create admin tenant
+  const adminTenant = await payload.create({
+    collection: "tenants",
+    data: {
+      name: "admin",
+      subdomain: "admin@shop",
+      stripeAccountId: "admin",
+    },
+  });
+  //create admin user
+  await payload.create({
+    collection: "users",
+    data: {
+      email: "admin@demo.com",
+      password: "demo",
+      roles: ["super-admin"],
+      username: "admin",
+      tenants: [
+        {
+          tenant: adminTenant.id,
+        },
+      ],
+    },
+  });
+
   for (const category of categories) {
     const parentCategory = await payload.create({
       collection: "categories",

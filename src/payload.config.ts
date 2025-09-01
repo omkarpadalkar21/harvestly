@@ -41,12 +41,17 @@ export default buildConfig({
     payloadCloudPlugin(),
     multiTenantPlugin({
       collections: {
-        products: {},
+        products: {
+          customTenantField: true,
+        },
       },
       tenantsArrayField: {
         includeDefaultField: false,
       },
-        userHasAccessToAllTenants: (user)=>Boolean(user?.roles?.includes("super-admin"))
+      userHasAccessToAllTenants: (user) => {
+        const typedUser = user as { roles?: string[] };
+        return Boolean(typedUser?.roles?.includes("super-admin"));
+      },
     }),
   ],
 });

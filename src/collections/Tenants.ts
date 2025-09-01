@@ -5,7 +5,6 @@ export const Tenants: CollectionConfig = {
   admin: {
     useAsTitle: "subdomain",
   },
-  auth: true,
   fields: [
     {
       name: "name",

@@ -2,7 +2,25 @@ import type { CollectionConfig } from "payload";
 
 export const Products: CollectionConfig = {
   slug: "products",
+  admin: {
+    group: "Content",
+  },
+  access: {
+    create: () => true,
+    read: () => true,
+    update: () => true,
+    delete: () => true,
+  },
   fields: [
+    {
+      name: "tenant",
+      type: "relationship",
+      relationTo: "tenants",
+      required: true,
+      admin: {
+        position: "sidebar",
+      },
+    },
     {
       name: "name",
       type: "text",
@@ -152,7 +170,6 @@ export const Products: CollectionConfig = {
       ({ data, originalDoc }) => {
         // Clear subcategory if category has changed and we have an existing document
         if (originalDoc?.id && data?.category !== originalDoc?.category) {
-          console.log("Clearing subcategory because category changed");
           data.subcategory = null;
         }
         return data;
