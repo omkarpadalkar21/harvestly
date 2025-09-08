@@ -40,7 +40,7 @@ export const ProductCard = ({
   };
 
   return (
-    <Link href={`/products/${id}`}>
+    <Link href={`${generateTenantURL(tenantSubdomain)}/products/${id}`}>
       <div
         className={
           "hover:shadow-lg transition-shadow duration-200 border border-black rounded-lg bg-white h-full flex flex-col"
@@ -83,7 +83,7 @@ export const ProductCard = ({
           </div>
         </div>
         <div className={"p-4  "}>
-          <div className={"relative px-2 py-1 border border-black w-fit"}>
+          <div className={"relative px-2 py-1 border border-black w-fit bg-green-600 text-white"}>
             <p>₹{price}</p>
           </div>
         </div>

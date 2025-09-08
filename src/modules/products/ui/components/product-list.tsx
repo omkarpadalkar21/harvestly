@@ -1,16 +1,12 @@
 "use client";
-import { useTRPC } from "@/trpc/client";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import {useTRPC} from "@/trpc/client";
+import {useSuspenseInfiniteQuery} from "@tanstack/react-query";
 import React from "react";
-import { useProductFilters } from "@/modules/hooks/use-product-filters";
-import {
-  ProductCard,
-  ProductCardSkeleton,
-} from "@/modules/products/ui/components/product-card";
-import { DEFAULT_LIMIT } from "@/constants";
-import { Button } from "@/components/ui/button";
-import { InboxIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {useProductFilters} from "@/modules/hooks/use-product-filters";
+import {ProductCard, ProductCardSkeleton,} from "@/modules/products/ui/components/product-card";
+import {DEFAULT_LIMIT} from "@/constants";
+import {Button} from "@/components/ui/button";
+import {InboxIcon} from "lucide-react";
 
 interface Props {
   category?: string;

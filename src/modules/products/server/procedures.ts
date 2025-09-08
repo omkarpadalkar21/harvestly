@@ -6,6 +6,24 @@ import { Media, Tenant } from "@/payload-types";
 import { DEFAULT_LIMIT } from "@/constants";
 
 export const productsRouter = createTRPCRouter({
+  getOne: baseProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const product = await ctx.db.findByID({
+        collection: "products",
+        id: input.id,
+      });
+
+      return {
+        ...product,
+        image: product.image as Media | null,
+        tenant: product.tenant as Tenant & { image: Media | null },
+      };
+    }),
   getMany: baseProcedure
     .input(
       z.object({
@@ -18,7 +36,7 @@ export const productsRouter = createTRPCRouter({
         tags: z.array(z.string()).nullable().optional(),
         sort: z.enum(sortValues).nullable().optional(),
         tenantSubdomain: z.string().nullable().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Where = {};
