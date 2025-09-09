@@ -83,7 +83,11 @@ export const ProductCard = ({
           </div>
         </div>
         <div className={"p-4  "}>
-          <div className={"relative px-2 py-1 border border-black w-fit bg-green-600 text-white"}>
+          <div
+            className={
+              "relative px-2 py-1 border border-black w-fit bg-green-600 text-white"
+            }
+          >
             <p>₹{price}</p>
           </div>
         </div>
