@@ -8,7 +8,7 @@ export const tenantsRouter = createTRPCRouter({
     .input(
       z.object({
         subdomain: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const tenantsData = await ctx.db.find({
