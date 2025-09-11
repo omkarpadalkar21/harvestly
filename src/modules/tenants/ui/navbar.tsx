@@ -5,7 +5,25 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Button } from "@/components/ui/button";
+import { ShoppingCartIcon } from "lucide-react";
 
+// import { CheckoutButton } from "@/modules/checkout/ui/components/checkout-button";
+const CheckoutButton = dynamic(
+  () =>
+    import("../../checkout/ui/components/checkout-button").then(
+      (mod) => mod.CheckoutButton,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <Button disabled variant={"secondary"}>
+        <ShoppingCartIcon />
+      </Button>
+    ),
+  },
+);
 interface Props {
   subdomain: string;
 }
@@ -13,7 +31,7 @@ interface Props {
 const Navbar = ({ subdomain }: Props) => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
-    trpc.tenants.getOne.queryOptions({ subdomain })
+    trpc.tenants.getOne.queryOptions({ subdomain }),
   );
   return (
     <nav className="h-20 border-b border-black bg-white font-medium">
@@ -33,6 +51,7 @@ const Navbar = ({ subdomain }: Props) => {
           )}
           <p className="text-xl">{data.name}</p>
         </Link>
+        <CheckoutButton tenantSlug={subdomain} hideIfEmpty />
       </div>
     </nav>
   );
@@ -45,6 +64,9 @@ export const NavbarSkeleton = () => {
     <nav className="h-20 border-b border-black bg-white font-medium">
       <div className="max-w-(--breakpoint-xl) mx-auto flex justify-between items-center h-full px-4 lg:px-12">
         <div />
+        <Button disabled variant={"secondary"}>
+          <ShoppingCartIcon />
+        </Button>
       </div>
     </nav>
   );
