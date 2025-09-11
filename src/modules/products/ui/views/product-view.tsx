@@ -9,7 +9,14 @@ import { Button } from "@/components/ui/button";
 import { LinkIcon, StarIcon } from "lucide-react";
 import { Fragment } from "react";
 import { Progress } from "@/components/ui/progress";
+import dynamic from "next/dynamic";
 
+// import CartButton from "@/modules/products/ui/components/cart-button";
+const CartButton = dynamic(
+  () => import("../components/cart-button").then((mod) => mod.CartButton),
+  { ssr: false,
+  loading:()=><Button disabled className={"flex-1 bg-green-600"}>Add to cart</Button>},
+);
 interface ProductViewProps {
   productId: string;
   subdomain: string;
@@ -35,7 +42,9 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
           <div className="col-span-2">
             <div className="p-6 flex items-center justify-between">
               <h1 className={"text-4xl font-medium"}>{data.name}</h1>
-                <p>{data.quantity.amount} {data.quantity.unit}</p>
+              <p>
+                {data.quantity.amount} {data.quantity.unit}
+              </p>
             </div>
             <div className={"border-y flex"}>
               <div
@@ -43,8 +52,14 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                   "px-6 py-4 border-r flex items-center justify-center"
                 }
               >
-                <div className={"px-2 py-1 border border-black w-fit bg-green-600"}>
-                  {<p className={"text-base font-medium text-white"}>₹{data.price}</p>}
+                <div
+                  className={"px-2 py-1 border border-black w-fit bg-green-600"}
+                >
+                  {
+                    <p className={"text-base font-medium text-white"}>
+                      ₹{data.price}
+                    </p>
+                  }
                 </div>
               </div>
 
@@ -107,10 +122,8 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
           <div className={"col-span-1 lg:border-l border-black"}>
             <div className={"border-black  h-full"}>
               <div className={"flex flex-col gap-4 p-6 border-b border-black"}>
-                <div
-                  className={"flex flex-row items-center gap-2 "}
-                >
-                  <Button variant={"secondary"} className="flex-1 py-3 bg-green-600">Add to cart</Button>
+                <div className={"flex flex-row items-center gap-2 "}>
+                  <CartButton tenantSlug={subdomain} productId={productId} />
                   <Button
                     variant={"secondary"}
                     onClick={() => {}}
