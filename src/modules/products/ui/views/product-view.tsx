@@ -169,3 +169,4 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
 };
 
 export default ProductView;
+
