@@ -3,16 +3,16 @@ import { CircleXIcon } from "lucide-react";
 
 interface CheckoutSidebarProps {
   total: number;
-  onCheckout: () => void;
+  onPurchase: () => void;
   isCanceled?: boolean;
-  isPending?: boolean;
+  disabled?: boolean;
 }
 
 const CheckoutSidebar = ({
   total,
-  onCheckout,
+  onPurchase,
   isCanceled,
-  isPending,
+  disabled,
 }: CheckoutSidebarProps) => {
   return (
     <div
@@ -27,8 +27,8 @@ const CheckoutSidebar = ({
       <div className={"p-4 flex items-center justify-center"}>
         <Button
           variant={"secondary"}
-          disabled={isPending}
-          onClick={onCheckout}
+          disabled={disabled}
+          onClick={onPurchase}
           size={"lg"}
           className={
             "text-base w-full text-white bg-primary hover:bg-green-600 hover:text-primary"
