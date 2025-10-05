@@ -11,12 +11,11 @@ interface CartState {
   removeProduct: (tenantSlug: string, productId: string) => void;
   clearCart: (tenantSlug: string) => void;
   clearAllCarts: () => void;
-  getCartByTenant: (tenantSlug: string) => string[];
 }
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       tenantCarts: {},
       addProduct: (tenantSlug, productId) =>
         set((state) => ({
@@ -52,8 +51,6 @@ export const useCartStore = create<CartState>()(
           },
         })),
       clearAllCarts: () => set({ tenantCarts: {} }),
-      getCartByTenant: (tenantSlug: string) =>
-        get().tenantCarts[tenantSlug]?.productIds || [],
     }),
     {
       name: "harvestly-cart",
