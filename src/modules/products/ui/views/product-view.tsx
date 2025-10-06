@@ -7,30 +7,50 @@ import { generateTenantURL } from "@/lib/utils";
 import StarRating from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, StarIcon } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import dynamic from "next/dynamic";
 
 // import CartButton from "@/modules/products/ui/components/cart-button";
 const CartButton = dynamic(
   () => import("../components/cart-button").then((mod) => mod.CartButton),
-  { ssr: false,
-  loading:()=><Button disabled className={"flex-1 bg-green-600"}>Add to cart</Button>},
+  {
+    ssr: false,
+    loading: () => (
+      <Button disabled className={"flex-1 bg-green-600"}>
+        Add to cart
+      </Button>
+    ),
+  }
 );
+
 interface ProductViewProps {
   productId: string;
   subdomain: string;
 }
 
 const ProductView = ({ productId, subdomain }: ProductViewProps) => {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
-    trpc.products.getOne.queryOptions({ id: productId }),
+    trpc.products.getOne.queryOptions({ id: productId })
   );
   return (
     <div className="px-4 lg:px-12 py-10">
       <div className="border border-black rounded-sm overflow-hidden bg-white">
-        <div className="relative aspect-[3.9] border-b">
+        <div className="relative aspect-[4/3] sm:aspect-[3.5] border-b">
+          {hasMounted && data.isPurchased && (
+            <div
+              className={
+                "pointer-events-none absolute top-2 left-2 z-50 bg-white text-black text-base font-semibold px-2 py-1 rounded-sm shadow border border-black"
+              }
+            >
+              😊 Previously Bought!
+            </div>
+          )}
           <Image
             src={data.image?.url || "/placeholder.png"}
             alt={data.name}
@@ -169,4 +189,3 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
 };
 
 export default ProductView;
-

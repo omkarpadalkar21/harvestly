@@ -40,9 +40,9 @@ const SearchInput = ({ disabled }: Props) => {
       </Button>
       {session.data?.user && (
         <Button asChild>
-          <Link href={"/library"}>
+          <Link prefetch href={"/orders"}>
             <BookmarkCheckIcon />
-            Library
+            Orders
           </Link>
         </Button>
       )}
