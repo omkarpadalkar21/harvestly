@@ -1,7 +1,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/modules/checkout/hooks/use-cart";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ interface CheckoutViewProps {
 
 const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [states, setStates] = useCheckoutStates();
   const { productIds, clearAllCarts, removeProduct, clearCart } =
     useCart(tenantSubdomain);
@@ -25,7 +26,7 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
   const { data, error, isLoading } = useQuery(
     trpc.checkout.getProducts.queryOptions({
       ids: productIds,
-    })
+    }),
   );
 
   const purchase = useMutation(
@@ -42,7 +43,7 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
         }
         toast.error(error.message);
       },
-    })
+    }),
   );
 
   useEffect(() => {
@@ -50,10 +51,17 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
       setStates({ success: false, cancel: false });
       clearCart();
       // TODO: invalidate library
-
-      router.push("/products");
+      queryClient.invalidateQueries(trpc.orders.getMany.infiniteQueryFilter());
+      router.push("/orders");
     }
-  }, [states.success, clearCart, router, setStates]);
+  }, [
+    states.success,
+    clearCart,
+    router,
+    setStates,
+    queryClient,
+    trpc.orders.getMany,
+  ]);
 
   //clears cart if a product is removed by the tenant
   useEffect(() => {
