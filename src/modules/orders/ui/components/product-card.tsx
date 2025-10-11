@@ -27,7 +27,7 @@ export const ProductCard = ({
   quantity,
 }: ProductCardProps) => {
   return (
-    <Link href={`/orders/${id}`}>
+    <Link prefetch href={`/orders/${id}`}>
       <div
         className={
           "hover:shadow-lg transition-shadow duration-200 border border-black rounded-lg bg-white h-full flex flex-col"
