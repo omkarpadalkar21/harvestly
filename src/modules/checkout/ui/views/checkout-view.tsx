@@ -26,7 +26,7 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
   const { data, error, isLoading } = useQuery(
     trpc.checkout.getProducts.queryOptions({
       ids: productIds,
-    }),
+    })
   );
 
   const purchase = useMutation(
@@ -43,16 +43,25 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
         }
         toast.error(error.message);
       },
-    }),
+    })
   );
 
   useEffect(() => {
     if (states.success) {
-      setStates({ success: false, cancel: false });
+      // Show toast first
+
+      // Clear cart and invalidate queries
       clearCart();
-      // TODO: invalidate library
       queryClient.invalidateQueries(trpc.orders.getMany.infiniteQueryFilter());
-      router.push("/orders");
+
+      // Reset states
+      setStates({ success: false, cancel: false });
+
+      // Redirect after a short delay to ensure toast is visible
+      setTimeout(() => {
+        router.push("/orders");
+        toast.success("Order placed successfully");
+      }, 1000);
     }
   }, [
     states.success,

@@ -46,7 +46,10 @@ export const ordersRouter = createTRPCRouter({
       });
 
       if (!product) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
       }
 
       return product;
@@ -83,9 +86,35 @@ export const ordersRouter = createTRPCRouter({
         },
       });
 
+      const dataWithSummarizedReviews = await Promise.all(
+        productsData.docs.map(async (doc) => {
+          const reviewsData = await ctx.db.find({
+            collection: "reviews",
+            pagination: false,
+            where: {
+              product: {
+                equals: doc.id,
+              },
+            },
+          });
+
+          return {
+            ...doc,
+            reviewCount: reviewsData.totalDocs,
+            reviewRating:
+              reviewsData.docs.length === 0
+                ? 0
+                : reviewsData.docs.reduce(
+                    (acc, review) => acc + review.rating,
+                    0,
+                  ) / reviewsData.totalDocs,
+          };
+        }),
+      );
+
       return {
         ...productsData,
-        docs: productsData.docs.map((doc) => ({
+        docs: dataWithSummarizedReviews.map((doc) => ({
           ...doc,
           image: doc.image as Media | null,
           tenant: doc.tenant as Tenant & { image: Media | null },

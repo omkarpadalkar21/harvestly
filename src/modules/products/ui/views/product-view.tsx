@@ -6,10 +6,11 @@ import Link from "next/link";
 import { generateTenantURL } from "@/lib/utils";
 import StarRating from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
-import { LinkIcon, StarIcon } from "lucide-react";
+import { CheckIcon, LinkIcon, StarIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 
 // import CartButton from "@/modules/products/ui/components/cart-button";
 const CartButton = dynamic(
@@ -21,7 +22,7 @@ const CartButton = dynamic(
         Add to cart
       </Button>
     ),
-  }
+  },
 );
 
 interface ProductViewProps {
@@ -31,12 +32,13 @@ interface ProductViewProps {
 
 const ProductView = ({ productId, subdomain }: ProductViewProps) => {
   const [hasMounted, setHasMounted] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   useEffect(() => {
     setHasMounted(true);
   }, []);
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
-    trpc.products.getOne.queryOptions({ id: productId })
+    trpc.products.getOne.queryOptions({ id: productId }),
   );
   return (
     <div className="px-4 lg:px-12 py-10">
@@ -112,8 +114,14 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                   "hidden lg:flex px-6 py-4 items-center justify-center "
                 }
               >
-                <div className={"flex items-center gap-1"}>
-                  <StarRating rating={4} iconClassName={"size-4"} />
+                <div className={"flex items-center gap-2"}>
+                  <StarRating
+                    rating={data.reviewRating}
+                    iconClassName={"size-4"}
+                  />
+                  <p className={"text-base font-medium"}>
+                    {data.reviewCount} ratings
+                  </p>
                 </div>
               </div>
             </div>
@@ -123,9 +131,14 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                 "block lg:hidden px-6 py-4 items-center justify-center border-b"
               }
             >
-              <div className={"flex items-center gap-1"}>
-                <StarRating rating={4} iconClassName={"size-4"} />
-                <p className={"text-base font-medium"}>{5} ratings</p>
+              <div className={"flex items-center gap-2"}>
+                <StarRating
+                  rating={data.reviewRating}
+                  iconClassName={"size-4"}
+                />
+                <p className={"text-base font-medium"}>
+                  {data.reviewCount} ratings
+                </p>
               </div>
             </div>
 
@@ -146,11 +159,19 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                   <CartButton tenantSlug={subdomain} productId={productId} />
                   <Button
                     variant={"secondary"}
-                    onClick={() => {}}
-                    disabled={false}
+                    onClick={() => {
+                      setIsCopied(true);
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success("URL Copied to clipboard!");
+
+                      setTimeout(() => {
+                        setIsCopied(false);
+                      }, 2000);
+                    }}
+                    disabled={isCopied}
                     className="px-4 py-3"
                   >
-                    <LinkIcon />
+                    {isCopied ? <CheckIcon /> : <LinkIcon />}
                   </Button>
                 </div>
                 <p className={"text-center font-medium"}>
@@ -164,8 +185,8 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                   <h3 className={"text-xl font-medium"}>Ratings</h3>
                   <div className={"flex items-center gap-x-1 font-medium"}>
                     <StarIcon className={"size-4 fill-black"} />
-                    <p>({5})</p>
-                    <p className={"text-base"}>{5} ratings</p>
+                    <p>({data.reviewRating})</p>
+                    <p className={"text-base"}>{data.reviewCount} ratings</p>
                   </div>
                 </div>
                 <div className={"grid grid-cols-[auto_1fr_auto] gap-3 mt-4"}>
@@ -174,8 +195,13 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                       <div className={"font-medium"}>
                         {star} {star === 1 ? "star" : "stars"}
                       </div>
-                      <Progress value={50} className={"h-[1lh]"} />
-                      <div className={"font-medium"}>{0}%</div>
+                      <Progress
+                        value={data.ratingDistribution[star]}
+                        className={"h-[1lh]"}
+                      />
+                      <div className={"font-medium"}>
+                        {data.ratingDistribution[star]}%
+                      </div>
                     </Fragment>
                   ))}
                 </div>
