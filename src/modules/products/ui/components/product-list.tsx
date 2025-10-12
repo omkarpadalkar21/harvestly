@@ -1,12 +1,15 @@
 "use client";
-import {useTRPC} from "@/trpc/client";
-import {useSuspenseInfiniteQuery} from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
-import {useProductFilters} from "@/modules/hooks/use-product-filters";
-import {ProductCard, ProductCardSkeleton,} from "@/modules/products/ui/components/product-card";
-import {DEFAULT_LIMIT} from "@/constants";
-import {Button} from "@/components/ui/button";
-import {InboxIcon} from "lucide-react";
+import { useProductFilters } from "@/modules/hooks/use-product-filters";
+import {
+  ProductCard,
+  ProductCardSkeleton,
+} from "@/modules/products/ui/components/product-card";
+import { DEFAULT_LIMIT } from "@/constants";
+import { Button } from "@/components/ui/button";
+import { InboxIcon } from "lucide-react";
 
 interface Props {
   category?: string;
@@ -35,8 +38,8 @@ export const ProductList = ({
           getNextPageParam: (lastPage) => {
             return lastPage.docs.length > 0 ? lastPage.nextPage : undefined;
           },
-        }
-      )
+        },
+      ),
     );
 
   if (data.pages?.[0]?.docs.length === 0) {
@@ -68,8 +71,8 @@ export const ProductList = ({
               imageUrl={product.image?.url}
               tenantSubdomain={product.tenant.subdomain}
               tenantImageUrl={product.tenant.image?.url}
-              reviewRating={3}
-              reviewCount={5}
+              reviewRating={product.reviewRating}
+              reviewCount={product.reviewCount}
               price={product.price}
               quantity={product.quantity}
             />
