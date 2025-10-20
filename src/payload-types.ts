@@ -176,6 +176,9 @@ export interface Tenant {
    */
   subdomain: string;
   image?: (string | null) | Media;
+  /**
+   * Stripe account id associated with your shop
+   */
   stripeAccountId: string;
   /**
    * You cannot create products until you submit your Stripe details

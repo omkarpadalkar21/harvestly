@@ -11,7 +11,7 @@ export const productsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const headers = await getHeaders();
@@ -84,7 +84,7 @@ export const productsRouter = createTRPCRouter({
           const rating = Number(key);
           const count = ratingDistribution[rating] || 0;
           ratingDistribution[rating] = Math.round(
-            (count / reviews.totalDocs) * 100,
+            (count / reviews.totalDocs) * 100
           );
         });
       }
@@ -111,7 +111,7 @@ export const productsRouter = createTRPCRouter({
         tags: z.array(z.string()).nullable().optional(),
         sort: z.enum(sortValues).nullable().optional(),
         tenantSubdomain: z.string().nullable().optional(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const where: Where = {};
@@ -222,10 +222,10 @@ export const productsRouter = createTRPCRouter({
                 ? 0
                 : reviewsData.docs.reduce(
                     (acc, review) => acc + review.rating,
-                    0,
+                    0
                   ) / reviewsData.totalDocs,
           };
-        }),
+        })
       );
 
       return {

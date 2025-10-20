@@ -14,7 +14,7 @@ const ProductView = ({ productId }: Props) => {
   const { data } = useSuspenseQuery(
     trpc.orders.getOne.queryOptions({
       productId,
-    }),
+    })
   );
   return (
     <div className={"min-h-screen bg-white"}>
@@ -34,12 +34,17 @@ const ProductView = ({ productId }: Props) => {
       >
         <div className={"grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-16"}>
           <div className={"lg:col-span-2"}>
-            <div className={"p-4 bg-white rounded-md border border-black gap-4"}>
-              <ReviewSiderbar productId={productId}/>
+            <div
+              className={"p-4 bg-white rounded-md border border-black gap-4"}
+            >
+              <ReviewSiderbar productId={productId} />
             </div>
           </div>
           <div className={"lg:col-span-5"}>
-            <p className={"font-medium italic text-muted-foreground"}>No special content</p>
+            {/* TODO: Change this div  */}
+            <p className={"font-medium italic text-muted-foreground"}>
+              No special content
+            </p>
           </div>
         </div>
       </section>
