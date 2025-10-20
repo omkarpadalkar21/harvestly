@@ -19,6 +19,7 @@ import { Tenants } from "@/collections/Tenants";
 import { multiTenantPlugin } from "@payloadcms/plugin-multi-tenant";
 import { Orders } from "@/collections/Orders";
 import { Reviews } from "@/collections/Reviews";
+import { isSuperAdmin } from "./lib/access";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -30,7 +31,16 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Products, Tags, Tenants, Orders,Reviews],
+  collections: [
+    Users,
+    Media,
+    Categories,
+    Products,
+    Tags,
+    Tenants,
+    Orders,
+    Reviews,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: {
@@ -51,10 +61,7 @@ export default buildConfig({
       tenantsArrayField: {
         includeDefaultField: false,
       },
-      userHasAccessToAllTenants: (user) => {
-        const typedUser = user as { roles?: string[] };
-        return Boolean(typedUser?.roles?.includes("super-admin"));
-      },
+      userHasAccessToAllTenants: (user) => isSuperAdmin(user),
     }),
   ],
 });
