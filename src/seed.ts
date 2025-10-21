@@ -1,12 +1,16 @@
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
-import { getPayload } from "payload";
-import config from "@payload-config";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load environment variables before importing modules that depend on them
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+import { getPayload } from "payload";
+import config from "@payload-config";
+import { stripe } from "./lib/stripe";
 
 export const categories = [
   {
@@ -91,12 +95,13 @@ const seed = async () => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   //create admin tenant
+  const adminStripeAccount = await stripe.accounts.create({});
   const adminTenant = await payload.create({
     collection: "tenants",
     data: {
       name: "admin",
       subdomain: "admin@shop",
-      stripeAccountId: "admin",
+      stripeAccountId: adminStripeAccount.id,
     },
   });
   //create admin user
