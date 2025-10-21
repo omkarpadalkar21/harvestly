@@ -10,7 +10,8 @@
     "lint": "next lint",
     "generate:types": "payload generate:types",
     "db:fresh": "payload migrate:fresh",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx src/seed.ts",
+    "seed:products": "tsx src/seed-products.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

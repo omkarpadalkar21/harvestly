@@ -13,7 +13,8 @@ export const Products: CollectionConfig = {
 
       const tenant = req.user?.tenants?.[0].tenant as Tenant;
 
-      return Boolean(tenant?.stripeDetailsSubmitted);
+      return true;
+      // return Boolean(tenant?.stripeDetailsSubmitted);
     },
   },
   fields: [
