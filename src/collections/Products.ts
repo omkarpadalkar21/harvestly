@@ -6,6 +6,7 @@ export const Products: CollectionConfig = {
   slug: "products",
   admin: {
     group: "Content",
+    description: "You must verify your account before adding products",
   },
   access: {
     create: ({ req }) => {
@@ -13,8 +14,7 @@ export const Products: CollectionConfig = {
 
       const tenant = req.user?.tenants?.[0].tenant as Tenant;
 
-      return true;
-      // return Boolean(tenant?.stripeDetailsSubmitted);
+      return Boolean(tenant?.stripeDetailsSubmitted);
     },
   },
   fields: [
