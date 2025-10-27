@@ -4,6 +4,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ReviewSiderbar } from "@/modules/orders/ui/components/review-siderbar";
+import { Suspense } from "react";
+import { ReviewFormSkeleton } from "../components/review-form";
 
 interface Props {
   productId: string;
@@ -37,7 +39,9 @@ const ProductView = ({ productId }: Props) => {
             <div
               className={"p-4 bg-white rounded-md border border-black gap-4"}
             >
-              <ReviewSiderbar productId={productId} />
+              <Suspense fallback={<ReviewFormSkeleton />}>
+                <ReviewSiderbar productId={productId} />
+              </Suspense>
             </div>
           </div>
           <div className={"lg:col-span-5"}>

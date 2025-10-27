@@ -3,7 +3,7 @@ import {
   createTRPCRouter,
   protectedProcuedures,
 } from "@/trpc/init";
-import { z } from "zod";
+import { tuple, z } from "zod";
 
 import { stripe } from "@/lib/stripe";
 import { CheckoutMetaData, ProductMetaData } from "@/modules/checkout/types";
@@ -70,6 +70,11 @@ export const checkoutRouter = createTRPCRouter({
             {
               "tenant.subdomain": {
                 equals: input.tenantSubdomain,
+              },
+            },
+            {
+              isArchived: {
+                not_equals: true,
               },
             },
           ],
@@ -174,9 +179,18 @@ export const checkoutRouter = createTRPCRouter({
         collection: "products",
         depth: 2,
         where: {
-          id: {
-            in: input.ids,
-          },
+          and: [
+            {
+              id: {
+                in: input.ids,
+              },
+            },
+            {
+              isArchived: {
+                not_equals: true,
+              },
+            },
+          ],
         },
       });
 

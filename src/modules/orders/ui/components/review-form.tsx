@@ -42,14 +42,14 @@ const ReviewForm = ({ productId, initialData }: Props) => {
         queryClient.invalidateQueries(
           trpc.reviews.getOne.queryOptions({
             productId,
-          }),
+          })
         );
         setIsPreview(true);
       },
       onError: (error) => {
         toast.error(error.message);
       },
-    }),
+    })
   );
 
   const updateReview = useMutation(
@@ -58,14 +58,14 @@ const ReviewForm = ({ productId, initialData }: Props) => {
         queryClient.invalidateQueries(
           trpc.reviews.getOne.queryOptions({
             productId,
-          }),
+          })
         );
         setIsPreview(true);
       },
       onError: (error) => {
         toast.error(error.message);
       },
-    }),
+    })
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -163,3 +163,29 @@ const ReviewForm = ({ productId, initialData }: Props) => {
   );
 };
 export default ReviewForm;
+
+export const ReviewFormSkeleton = () => {
+  return (
+    <div className={"flex flex-col gap-y-4"}>
+      <p className={"font-medium"}>Liked it? Give it a raiting</p>
+      <StarPicker value={5} disabled />
+      <Textarea
+        placeholder={"Want to leave a written review?"}
+        disabled
+        className={"border-black"}
+      />
+      <Button
+        variant={"secondary"}
+        disabled
+        type={"button"}
+        size={"lg"}
+        className={
+          "bg-black text-white hover:bg-green-600 hover:text-primary w-fit"
+        }
+      >
+        Post review
+      </Button>
+      )
+    </div>
+  );
+};
