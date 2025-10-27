@@ -5,6 +5,7 @@ import { sortValues } from "@/modules/products/search-params";
 import { Media, Tenant } from "@/payload-types";
 import { DEFAULT_LIMIT } from "@/constants";
 import { headers as getHeaders } from "next/headers";
+import { TRPCError } from "@trpc/server";
 
 export const productsRouter = createTRPCRouter({
   getOne: baseProcedure
@@ -20,6 +21,13 @@ export const productsRouter = createTRPCRouter({
         collection: "products",
         id: input.id,
       });
+
+      if (product.isArchived) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
+      }
 
       let isPurchased = false;
 
@@ -114,7 +122,11 @@ export const productsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const where: Where = {};
+      const where: Where = {
+        isArchived: {
+          not_equals: true,
+        },
+      };
       let sort: Sort = "-createdAt";
 
       if (input.sort === "popularity") {
@@ -148,6 +160,13 @@ export const productsRouter = createTRPCRouter({
       if (input.tenantSubdomain) {
         where["tenant.subdomain"] = {
           equals: input.tenantSubdomain,
+        };
+      } else {
+        //if we are loading products on the public storefront (no tenantSubdomain)
+        //make sure not to load products when isPrivate:true
+        //these products will be exclusively available on the tenant store
+        where["isPrivate"] = {
+          not_equals: true,
         };
       }
 

@@ -234,7 +234,21 @@ export interface Product {
   id: string;
   tenant: string | Tenant;
   name: string;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * Price in ₹
    */
@@ -258,6 +272,14 @@ export interface Product {
   image?: (string | null) | Media;
   perishability: 'high' | 'medium' | 'low' | 'none';
   refundPolicy?: ('30-day' | '14-day' | '7-day' | '3-day' | '1-day' | 'no-refunds') | null;
+  /**
+   * If checked, this product will be archived
+   */
+  isArchived?: boolean | null;
+  /**
+   * If checked, this product will be hidden on the public storefront, not on the private storefront
+   */
+  isPrivate?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -468,6 +490,8 @@ export interface ProductsSelect<T extends boolean = true> {
   image?: T;
   perishability?: T;
   refundPolicy?: T;
+  isArchived?: T;
+  isPrivate?: T;
   updatedAt?: T;
   createdAt?: T;
 }

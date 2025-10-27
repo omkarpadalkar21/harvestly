@@ -1,5 +1,7 @@
 import { isSuperAdmin } from "@/lib/access";
 import { Tenant } from "@/payload-types";
+import { lexicalEditor, UploadFeature } from "@payloadcms/richtext-lexical";
+import { defaultFilter } from "cmdk";
 import type { CollectionConfig } from "payload";
 
 export const Products: CollectionConfig = {
@@ -16,6 +18,7 @@ export const Products: CollectionConfig = {
 
       return Boolean(tenant?.stripeDetailsSubmitted);
     },
+    delete: ({ req }) => isSuperAdmin(req.user),
   },
   fields: [
     {
@@ -34,8 +37,8 @@ export const Products: CollectionConfig = {
     },
     {
       name: "description",
-      // TODO: Change to richtext
-      type: "text",
+      editor: lexicalEditor(),
+      type: "richText",
     },
     {
       name: "price",
@@ -145,7 +148,25 @@ export const Products: CollectionConfig = {
       type: "select",
       options: ["30-day", "14-day", "7-day", "3-day", "1-day", "no-refunds"],
     },
-    // { name: "content", type: "textarea", admin: {} },
+    {
+      name: "isArchived",
+      label: "Archive",
+      defaultValue: false,
+      type: "checkbox",
+      admin: {
+        description: "If checked, this product will be archived",
+      },
+    },
+    {
+      name: "isPrivate",
+      label: "Private",
+      defaultValue: false,
+      type: "checkbox",
+      admin: {
+        description:
+          "If checked, this product will be hidden on the public storefront, not on the private storefront",
+      },
+    },
   ],
 
   hooks: {
@@ -180,11 +201,77 @@ export const Products: CollectionConfig = {
         if (originalDoc?.id && data?.category !== originalDoc?.category) {
           data.subcategory = null;
         }
+
+        // Convert plain text description to Lexical format if needed
+        if (data?.description && typeof data.description === "string") {
+          data.description = {
+            root: {
+              type: "root",
+              format: "",
+              indent: 0,
+              version: 1,
+              children: [
+                {
+                  children: [
+                    {
+                      detail: 0,
+                      format: 0,
+                      mode: "normal",
+                      style: "",
+                      text: data.description,
+                      type: "text",
+                      version: 1,
+                    },
+                  ],
+                  direction: "ltr",
+                  format: "",
+                  indent: 0,
+                  type: "paragraph",
+                  version: 1,
+                },
+              ],
+              direction: "ltr",
+            },
+          } as any;
+        }
+
         return data;
       },
     ],
     afterRead: [
       ({ doc }) => {
+        // Convert plain text description to Lexical format when reading
+        if (doc?.description && typeof doc.description === "string") {
+          doc.description = {
+            root: {
+              type: "root",
+              format: "",
+              indent: 0,
+              version: 1,
+              children: [
+                {
+                  children: [
+                    {
+                      detail: 0,
+                      format: 0,
+                      mode: "normal",
+                      style: "",
+                      text: doc.description,
+                      type: "text",
+                      version: 1,
+                    },
+                  ],
+                  direction: "ltr",
+                  format: "",
+                  indent: 0,
+                  type: "paragraph",
+                  version: 1,
+                },
+              ],
+              direction: "ltr",
+            },
+          } as any;
+        }
         return doc;
       },
     ],
