@@ -12,7 +12,10 @@ const Footer = () => {
     <nav className="h-20 border-t  border-black bg-white font-medium">
       <div className="max-w-(--breakpoint-xl) py-6 mx-auto flex gap-2 items-center h-full px-4 lg:px-12">
         <p>Powered by</p>
-        <Link href={"/"} className=" flex items-center pl-6">
+        <Link
+          href={process.env.NEXT_PUBLIC_APP_URL!}
+          className=" flex items-center"
+        >
           <span
             className={cn(
               "font-semibold flex gap-2 items-center",
