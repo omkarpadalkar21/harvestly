@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import path from "path";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,9 +9,8 @@ const __dirname = path.dirname(__filename);
 // Load environment variables before importing modules that depend on them
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-import { getPayload } from "payload";
 import config from "@payload-config";
-import { stripe } from "./lib/stripe";
+import { getPayload } from "payload";
 
 // Sample products data
 const products = [
@@ -876,6 +875,11 @@ const seedProducts = async () => {
       subcategoryMap.set(subcat.name, subcat.id);
     });
 
+    const allowedUnits = ["kg", "g", "l", "ml", "pc", "pack", "other"] as const;
+    type AllowedUnit = typeof allowedUnits[number];
+    const isAllowedUnit = (u: unknown): u is AllowedUnit =>
+      typeof u === "string" && (allowedUnits as readonly string[]).includes(u);
+
     // Create products
     console.log("Creating products...");
     for (const productData of products) {
@@ -884,14 +888,56 @@ const seedProducts = async () => {
         data: {
           tenant: tenant.id,
           name: productData.name,
-          description: productData.description,
+          description:
+            typeof productData.description === "string"
+              ? {
+                  root: {
+                    type: "root",
+                    format: "",
+                    indent: 0,
+                    version: 1,
+                    children: [
+                      {
+                        children: [
+                          {
+                            detail: 0,
+                            format: 0,
+                            mode: "normal",
+                            style: "",
+                            text: productData.description,
+                            type: "text",
+                            version: 1,
+                          },
+                        ],
+                        direction: "ltr",
+                        format: "",
+                        indent: 0,
+                        type: "paragraph",
+                        version: 1,
+                      },
+                    ],
+                    direction: "ltr",
+                  },
+                }
+              : productData.description,
           price: productData.price,
-          quantity: productData.quantity,
+          quantity: {
+            amount: productData.quantity.amount,
+            unit: isAllowedUnit(productData.quantity.unit)
+              ? productData.quantity.unit
+              : "other",
+          },
           category: categoryMap.get(productData.category),
           subcategory: subcategoryMap.get(productData.subcategory),
           tags: productData.tags.map(tag => tagMap.get(tag)).filter(Boolean),
           image: mediaMap.get(productData.image),
-          perishability: productData.perishability,
+          perishability: ((p: unknown) => {
+            const allowed = ["high", "medium", "low", "none"] as const;
+            type Perishability = typeof allowed[number];
+            return typeof p === "string" && (allowed as readonly string[]).includes(p)
+              ? (p as Perishability)
+              : "none";
+          })(productData.perishability),
           // refundPolicy will be set automatically by the hook based on perishability
         },
       });

@@ -1,16 +1,16 @@
 "use client";
 
-import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCart } from "@/modules/checkout/hooks/use-cart";
-import React, { useEffect } from "react";
-import { toast } from "sonner";
 import { generateTenantURL } from "@/lib/utils";
+import { useCart } from "@/modules/checkout/hooks/use-cart";
+import { useCheckoutStates } from "@/modules/checkout/hooks/use-checkout-states";
 import CheckoutItem from "@/modules/checkout/ui/components/checkout-item";
 import CheckoutSidebar from "@/modules/checkout/ui/components/checkout-sidebar";
+import { useTRPC } from "@/trpc/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { InboxIcon, LoaderIcon } from "lucide-react";
-import { useCheckoutStates } from "@/modules/checkout/hooks/use-checkout-states";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface CheckoutViewProps {
   tenantSubdomain: string;
@@ -20,7 +20,7 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [states, setStates] = useCheckoutStates();
-  const { productIds, clearAllCarts, removeProduct, clearCart } =
+  const { productIds, removeProduct, clearCart } =
     useCart(tenantSubdomain);
   const trpc = useTRPC();
   const { data, error, isLoading } = useQuery(

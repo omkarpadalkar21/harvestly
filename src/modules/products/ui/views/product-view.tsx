@@ -145,6 +145,7 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
 
             <div className={"p-6"}>
               {data.description ? (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 <RichText data={data.description as any} />
               ) : (
                 <p className={"text-muted-foreground italic font-medium"}>

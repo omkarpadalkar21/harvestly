@@ -53,11 +53,14 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left";
 }) {
   // Check if children include SheetDescription
-  const hasDescription = React.Children.toArray(children).some(
-    (child: any) =>
-      child?.type?.displayName === "SheetDescription" ||
-      child?.type === SheetDescription,
-  );
+  const hasDescription = React.Children.toArray(children).some((child) => {
+    if (!React.isValidElement(child)) return false;
+    const childType = child.type as unknown as { displayName?: string } | typeof SheetDescription;
+    return (
+      (typeof childType === "function" && childType === SheetDescription) ||
+      (typeof childType === "object" && childType?.displayName === "SheetDescription")
+    );
+  });
 
   return (
     <SheetPortal>

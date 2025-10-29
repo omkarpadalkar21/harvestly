@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { Poppins } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["700"],
@@ -30,15 +31,15 @@ const Footer = () => {
           <p className="text-sm">Phone: +91 98765 43210</p>
         </div>
         <div className="flex gap-6 text-sm">
-          <a href="/about" className="hover:underline">
+          <Link href="/about" className="hover:underline">
             About
-          </a>
-          <a href="/contact" className="hover:underline">
+          </Link>
+          <Link href="/contact" className="hover:underline">
             Contact
-          </a>
-          <a href="/privacy" className="hover:underline">
+          </Link>
+          <Link href="/privacy" className="hover:underline">
             Privacy Policy
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

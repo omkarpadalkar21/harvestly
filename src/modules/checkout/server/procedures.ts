@@ -3,16 +3,15 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/trpc/init";
-import { tuple, z } from "zod";
+import { z } from "zod";
 
+import { PLATFORM_FEE_PERCENTAGE } from "@/constants";
 import { stripe } from "@/lib/stripe";
+import { generateTenantURL } from "@/lib/utils";
 import { CheckoutMetaData, ProductMetaData } from "@/modules/checkout/types";
 import { Media, Tenant } from "@/payload-types";
 import { TRPCError } from "@trpc/server";
 import type Stripe from "stripe";
-import { PLATFORM_FEE_PERCENTAGE } from "@/constants";
-import { genImportMapIterateFields } from "payload";
-import { generateTenantURL } from "@/lib/utils";
 
 export const checkoutRouter = createTRPCRouter({
   verify: protectedProcedure.mutation(async ({ ctx }) => {

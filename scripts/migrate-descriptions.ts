@@ -86,7 +86,10 @@ async function migrateDescriptions() {
     console.error("Migration failed:", error);
     throw error;
   } finally {
-    await payload.db.destroy();
+    const db = payload.db;
+    if (db && typeof db.destroy === "function") {
+      await db.destroy();
+    }
   }
 }
 
