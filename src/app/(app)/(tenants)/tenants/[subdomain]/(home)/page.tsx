@@ -10,6 +10,9 @@ interface Props {
   searchParams: Promise<SearchParams>;
   params: Promise<{ subdomain: string }>;
 }
+
+export const dynamic = "force-dynamic";
+
 const Page = async ({ searchParams, params }: Props) => {
   const { subdomain } = await params;
   const filters = await loadProductFilters(searchParams);

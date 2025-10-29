@@ -132,7 +132,7 @@ const seed = async () => {
     });
 
     for (const subcategory of category.subcategories || []) {
-      const subCategories = await payload.create({
+      await payload.create({
         collection: "categories",
         data: {
           name: subcategory.name,

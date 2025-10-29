@@ -1,7 +1,6 @@
 import { isSuperAdmin } from "@/lib/access";
 import { Tenant } from "@/payload-types";
-import { lexicalEditor, UploadFeature } from "@payloadcms/richtext-lexical";
-import { defaultFilter } from "cmdk";
+import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import type { CollectionConfig } from "payload";
 
 export const Products: CollectionConfig = {
@@ -108,7 +107,7 @@ export const Products: CollectionConfig = {
         }
         return false;
       },
-      validate: (value, { data }) => {
+      validate: (value) => {
         // Allow null/undefined values
         if (value === null || value === undefined) {
           return true;
@@ -232,7 +231,7 @@ export const Products: CollectionConfig = {
               ],
               direction: "ltr",
             },
-          } as any;
+          }; // removed as any from here;
         }
 
         return data;
@@ -270,7 +269,7 @@ export const Products: CollectionConfig = {
               ],
               direction: "ltr",
             },
-          } as any;
+          }; // removed as any from here;
         }
         return doc;
       },

@@ -17,10 +17,10 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
-interface NavbarSidebarProps {
-  href: string;
-  children: React.ReactNode;
-}
+// interface NavbarSidebarProps {
+//   href: string;
+//   children: React.ReactNode;
+// }
 
 interface Props {
   items: typeof navbarItems;
