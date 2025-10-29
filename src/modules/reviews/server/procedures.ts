@@ -1,13 +1,13 @@
-import { createTRPCRouter, protectedProcuedures } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 export const reviewsRouter = createTRPCRouter({
-  getOne: protectedProcuedures
+  getOne: protectedProcedure
     .input(
       z.object({
         productId: z.string(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const product = await ctx.db.findByID({
@@ -47,13 +47,13 @@ export const reviewsRouter = createTRPCRouter({
       }
       return review;
     }),
-  create: protectedProcuedures
+  create: protectedProcedure
     .input(
       z.object({
         productId: z.string(),
         rating: z.number().min(1, { message: "Rating is required" }).max(5),
         description: z.string().min(3, { message: "Description is required" }),
-      }),
+      })
     )
     .mutation(async ({ input, ctx }) => {
       const product = await ctx.db.findByID({
@@ -99,13 +99,13 @@ export const reviewsRouter = createTRPCRouter({
 
       return review;
     }),
-  update: protectedProcuedures
+  update: protectedProcedure
     .input(
       z.object({
         reviewId: z.string(),
         rating: z.number().min(1, { message: "Rating is required" }).max(5),
         description: z.string().min(3, { message: "Description is required" }),
-      }),
+      })
     )
     .mutation(async ({ input, ctx }) => {
       const existingReview = await ctx.db.findByID({
@@ -127,7 +127,7 @@ export const reviewsRouter = createTRPCRouter({
           message: "You are not allowed to update this review",
         });
       }
-     
+
       const updatedReview = await ctx.db.update({
         collection: "reviews",
         id: input.reviewId,

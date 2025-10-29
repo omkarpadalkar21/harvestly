@@ -1,7 +1,7 @@
 import {
   baseProcedure,
   createTRPCRouter,
-  protectedProcuedures,
+  protectedProcedure,
 } from "@/trpc/init";
 import { tuple, z } from "zod";
 
@@ -11,9 +11,11 @@ import { Media, Tenant } from "@/payload-types";
 import { TRPCError } from "@trpc/server";
 import type Stripe from "stripe";
 import { PLATFORM_FEE_PERCENTAGE } from "@/constants";
+import { genImportMapIterateFields } from "payload";
+import { generateTenantURL } from "@/lib/utils";
 
 export const checkoutRouter = createTRPCRouter({
-  verify: protectedProcuedures.mutation(async ({ ctx }) => {
+  verify: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await ctx.db.findByID({
       collection: "users",
       id: ctx.session.user.id,
@@ -49,7 +51,7 @@ export const checkoutRouter = createTRPCRouter({
 
     return { url: accountLink.url };
   }),
-  purchase: protectedProcuedures
+  purchase: protectedProcedure
     .input(
       z.object({
         productIds: z.array(z.string().min(1)),
@@ -137,11 +139,13 @@ export const checkoutRouter = createTRPCRouter({
           },
         }));
 
+      const domain = generateTenantURL(input.tenantSubdomain);
+
       const checkout = await stripe.checkout.sessions.create(
         {
           customer_email: ctx.session.user.email,
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSubdomain}/checkout?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSubdomain}/checkout?cancel=true`,
+          success_url: `${domain}/checkout?success=true`,
+          cancel_url: `${domain}/checkout?cancel=true`,
           mode: "payment",
           line_items: lineItems,
           invoice_creation: {
