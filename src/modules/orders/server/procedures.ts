@@ -1,15 +1,15 @@
-import { createTRPCRouter, protectedProcuedures } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { Media, Tenant } from "@/payload-types";
 import { DEFAULT_LIMIT } from "@/constants";
 import { TRPCError } from "@trpc/server";
 
 export const ordersRouter = createTRPCRouter({
-  getOne: protectedProcuedures
+  getOne: protectedProcedure
     .input(
       z.object({
         productId: z.string(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const ordersData = await ctx.db.find({
@@ -54,12 +54,12 @@ export const ordersRouter = createTRPCRouter({
 
       return product;
     }),
-  getMany: protectedProcuedures
+  getMany: protectedProcedure
     .input(
       z.object({
         cursor: z.number().default(1),
         limit: z.number().default(DEFAULT_LIMIT),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const ordersData = await ctx.db.find({
@@ -106,10 +106,10 @@ export const ordersRouter = createTRPCRouter({
                 ? 0
                 : reviewsData.docs.reduce(
                     (acc, review) => acc + review.rating,
-                    0,
+                    0
                   ) / reviewsData.totalDocs,
           };
-        }),
+        })
       );
 
       return {

@@ -31,7 +31,7 @@ export const baseProcedure = t.procedure.use(async ({ next }) => {
   return next({ ctx: { db: payload } });
 });
 
-export const protectedProcuedures = baseProcedure.use(async ({ ctx, next }) => {
+export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   const headers = await getHeaders();
   const session = await ctx.db.auth({ headers });
 
