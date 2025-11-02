@@ -54,6 +54,7 @@ export const checkoutRouter = createTRPCRouter({
     .input(
       z.object({
         productIds: z.array(z.string().min(1)),
+        quantities: z.record(z.string(), z.number().min(1)).optional(),
         tenantSubdomain: z.string().min(1),
       })
     )
@@ -112,7 +113,10 @@ export const checkoutRouter = createTRPCRouter({
       }
 
       const totalAmount = products.docs.reduce(
-        (acc, item) => acc + item.price * 100,
+        (acc, item) => {
+          const quantity = input.quantities?.[item.id] || 1;
+          return acc + item.price * 100 * quantity;
+        },
         0
       );
 
@@ -122,10 +126,10 @@ export const checkoutRouter = createTRPCRouter({
 
       const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
         products.docs.map((product) => ({
-          quantity: 1, // TODO: Change this later
+          quantity: input.quantities?.[product.id] || 1,
           price_data: {
-            unit_amount: Math.round(Number(product.price) * 100), // Stripe expects amount in the smallest currency unit
-            currency: "inr", // TODO: Make dynamic if needed
+            unit_amount: Math.round(Number(product.price) * 100),
+            currency: "inr",
             product_data: {
               name: product.name,
               metadata: {
@@ -175,6 +179,7 @@ export const checkoutRouter = createTRPCRouter({
     .input(
       z.object({
         ids: z.array(z.string()),
+        quantities: z.record(z.string(), z.number().min(1)).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -206,7 +211,8 @@ export const checkoutRouter = createTRPCRouter({
 
       const totalPrice = data.docs.reduce((acc, product) => {
         const price = Number(product.price);
-        return acc + (isNaN(price) ? 0 : price);
+        const quantity = input.quantities?.[product.id] || 1;
+        return acc + (isNaN(price) ? 0 : price * quantity);
       }, 0);
 
       return {

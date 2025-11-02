@@ -10,6 +10,7 @@ interface CheckoutItemProps {
   tenantUrl: string;
   tenantName: string;
   price: number;
+  quantity: number;
   onRemove: () => void;
 }
 
@@ -21,6 +22,7 @@ const CheckoutItem = ({
   tenantUrl,
   tenantName,
   price,
+  quantity,
   onRemove,
 }: CheckoutItemProps) => {
   return (
@@ -51,8 +53,13 @@ const CheckoutItem = ({
         </div>
       </div>
 
-      <div className={"py-4 flex flex-col justify-between"}>
-        <p className={"font-medium"}>₹{price}</p>
+      <div className={"py-4 flex flex-col justify-between items-end"}>
+        <div className="text-right">
+          <p className={"font-medium"}>₹{price * quantity}</p>
+          {quantity > 1 && (
+            <p className="text-sm text-gray-600">₹{price} × {quantity}</p>
+          )}
+        </div>
         <button
           className={"underline font-medium cursor-pointer"}
           onClick={onRemove}

@@ -20,12 +20,19 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [states, setStates] = useCheckoutStates();
-  const { productIds, removeProduct, clearCart } =
+  const { productIds, cartItems, removeProduct, clearCart } =
     useCart(tenantSubdomain);
   const trpc = useTRPC();
+  
+  const quantities = cartItems.reduce((acc, item) => {
+    acc[item.id] = item.quantity;
+    return acc;
+  }, {} as Record<string, number>);
+  
   const { data, error, isLoading } = useQuery(
     trpc.checkout.getProducts.queryOptions({
       ids: productIds,
+      quantities,
     })
   );
 
@@ -117,25 +124,30 @@ const CheckoutView = ({ tenantSubdomain }: CheckoutViewProps) => {
               "border rounded-md border-black overflow-hidden bg-white"
             }
           >
-            {data?.docs.map((product, index) => (
-              <CheckoutItem
-                key={product.id}
-                isLast={index === data.docs.length - 1}
-                imageUrl={product.image?.url}
-                name={product.name}
-                productUrl={`${generateTenantURL(tenantSubdomain)}/products/${product.id}`}
-                tenantUrl={generateTenantURL(tenantSubdomain)}
-                tenantName={product.tenant.name}
-                price={product.price}
-                onRemove={() => removeProduct(product.id)}
-              />
-            ))}
+            {data?.docs.map((product, index) => {
+              const cartItem = cartItems.find((item) => item.id === product.id);
+              const quantity = cartItem?.quantity || 1;
+              return (
+                <CheckoutItem
+                  key={product.id}
+                  isLast={index === data.docs.length - 1}
+                  imageUrl={product.image?.url}
+                  name={product.name}
+                  productUrl={`${generateTenantURL(tenantSubdomain)}/products/${product.id}`}
+                  tenantUrl={generateTenantURL(tenantSubdomain)}
+                  tenantName={product.tenant.name}
+                  price={product.price}
+                  quantity={quantity}
+                  onRemove={() => removeProduct(product.id)}
+                />
+              );
+            })}
           </div>
         </div>
         <div className={"lg:col-span-3"}>
           <CheckoutSidebar
             total={data?.totalPrice || 0}
-            onPurchase={() => purchase.mutate({ tenantSubdomain, productIds })}
+            onPurchase={() => purchase.mutate({ tenantSubdomain, productIds, quantities })}
             isCanceled={states.cancel}
             disabled={purchase.isPending}
           />
