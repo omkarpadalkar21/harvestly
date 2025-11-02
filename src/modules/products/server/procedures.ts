@@ -1,5 +1,5 @@
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { z } from "zod";
+import z from "zod";
 import { Sort, Where } from "payload";
 import { sortValues } from "@/modules/products/search-params";
 import { Media, Tenant } from "@/payload-types";
@@ -17,12 +17,14 @@ export const productsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const headers = await getHeaders();
       const session = await ctx.db.auth({ headers });
+
       const product = await ctx.db.findByID({
         collection: "products",
         id: input.id,
+        depth: 1, // Minimize nested data
       });
 
-      if (product.isArchived) {
+      if (!product || product.isArchived) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Product not found",
@@ -36,32 +38,23 @@ export const productsRouter = createTRPCRouter({
           collection: "orders",
           pagination: false,
           limit: 1,
+          depth: 0, // No nested data needed
           where: {
             and: [
-              {
-                product: {
-                  equals: input.id,
-                },
-              },
-              {
-                user: {
-                  equals: session.user.id,
-                },
-              },
+              { product: { equals: input.id } },
+              { user: { equals: session.user.id } },
             ],
           },
         });
-
         isPurchased = !!ordersData.docs[0];
       }
 
       const reviews = await ctx.db.find({
         collection: "reviews",
         pagination: false,
+        depth: 0, // No nested data needed
         where: {
-          product: {
-            equals: input.id,
-          },
+          product: { equals: input.id },
         },
       });
 
@@ -82,7 +75,6 @@ export const productsRouter = createTRPCRouter({
       if (reviews.totalDocs > 0) {
         reviews.docs.forEach((review) => {
           const rating = review.rating;
-
           if (rating >= 1 && rating <= 5) {
             ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
           }
@@ -107,6 +99,7 @@ export const productsRouter = createTRPCRouter({
         ratingDistribution,
       };
     }),
+
   getMany: baseProcedure
     .input(
       z.object({
@@ -123,90 +116,63 @@ export const productsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const where: Where = {
-        isArchived: {
-          not_equals: true,
-        },
+        isArchived: { not_equals: true },
       };
+
       let sort: Sort = "-createdAt";
-
-      if (input.sort === "freshness") {
-        sort = "-createdAt";
-      }
-
-      if (input.sort === "price-asc") {
-        sort = "price";
-      }
-
-      if (input.sort === "price-desc") {
-        sort = "-price";
-      }
+      if (input.sort === "freshness") sort = "-createdAt";
+      if (input.sort === "price-asc") sort = "price";
+      if (input.sort === "price-desc") sort = "-price";
 
       if (input.minPrice) {
         where.price = { greater_than_equal: input.minPrice };
       }
 
       if (input.maxPrice) {
-        where.price = { less_than_equal: input.maxPrice };
+        where.price = { ...where.price, less_than_equal: input.maxPrice };
       }
 
       if (input.tenantSubdomain) {
-        where["tenant.subdomain"] = {
-          equals: input.tenantSubdomain,
-        };
+        where["tenant.subdomain"] = { equals: input.tenantSubdomain };
       } else {
-        //if we are loading products on the public storefront (no tenantSubdomain)
-        //make sure not to load products when isPrivate:true
-        //these products will be exclusively available on the tenant store
-        where["isPrivate"] = {
-          not_equals: true,
-        };
+        where.isPrivate = { not_equals: true };
       }
 
       if (input.subcategory) {
-        // First get the subcategory ID
         const subcategoryData = await ctx.db.find({
           collection: "categories",
+          depth: 0, // No nested data needed
           where: {
-            slug: {
-              equals: input.subcategory,
-            },
+            slug: { equals: input.subcategory },
           },
           limit: 1,
         });
 
         if (subcategoryData.docs.length > 0) {
-          where["subcategory"] = {
-            equals: subcategoryData.docs[0].id,
-          };
+          where.subcategory = { equals: subcategoryData.docs[0].id };
         }
       } else if (input.category) {
-        // First get the category ID
         const categoryData = await ctx.db.find({
           collection: "categories",
+          depth: 0, // No nested data needed
           where: {
-            slug: {
-              equals: input.category,
-            },
+            slug: { equals: input.category },
           },
           limit: 1,
         });
 
         if (categoryData.docs.length > 0) {
-          where["category"] = {
-            equals: categoryData.docs[0].id,
-          };
+          where.category = { equals: categoryData.docs[0].id };
         }
       }
 
       if (input.tags && input.tags.length > 0) {
-        where["tags.name"] = {
-          in: input.tags,
-        };
+        where["tags.name"] = { in: input.tags };
       }
 
       const data = await ctx.db.find({
         collection: "products",
-        depth: 2,
+        depth: 1, // Reduced from 2 - only 1 level of nesting
         where,
         sort,
         page: input.cursor,
@@ -218,10 +184,9 @@ export const productsRouter = createTRPCRouter({
           const reviewsData = await ctx.db.find({
             collection: "reviews",
             pagination: false,
+            depth: 0, // No nested data needed
             where: {
-              product: {
-                equals: doc.id,
-              },
+              product: { equals: doc.id },
             },
           });
 
@@ -229,36 +194,37 @@ export const productsRouter = createTRPCRouter({
             ...doc,
             reviewCount: reviewsData.totalDocs,
             reviewRating:
-              reviewsData.docs.length === 0
-                ? 0
-                : reviewsData.docs.reduce(
+              reviewsData.docs.length > 0
+                ? reviewsData.docs.reduce(
                     (acc, review) => acc + review.rating,
                     0
-                  ) / reviewsData.totalDocs,
+                  ) / reviewsData.totalDocs
+                : 0,
           };
         })
       );
 
       let orderedDocs = dataWithSummarizedReviews;
+
       if (input.sort === "rating") {
         orderedDocs = [...dataWithSummarizedReviews].sort((a, b) => {
-          if (b.reviewRating !== a.reviewRating) {
+          if (b.reviewRating !== a.reviewRating)
             return b.reviewRating - a.reviewRating;
-          }
-          if (b.reviewCount !== a.reviewCount) {
+          if (b.reviewCount !== a.reviewCount)
             return b.reviewCount - a.reviewCount;
-          }
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         });
       } else if (input.sort === "popularity") {
         orderedDocs = [...dataWithSummarizedReviews].sort((a, b) => {
-          if (b.reviewCount !== a.reviewCount) {
+          if (b.reviewCount !== a.reviewCount)
             return b.reviewCount - a.reviewCount;
-          }
-          if (b.reviewRating !== a.reviewRating) {
+          if (b.reviewRating !== a.reviewRating)
             return b.reviewRating - a.reviewRating;
-          }
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         });
       }
 

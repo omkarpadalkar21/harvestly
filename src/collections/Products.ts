@@ -28,6 +28,7 @@ export const Products: CollectionConfig = {
       admin: {
         position: "sidebar",
       },
+      index: true,
     },
     {
       name: "name",
@@ -87,6 +88,7 @@ export const Products: CollectionConfig = {
           exists: false,
         },
       },
+      index: true,
     },
     {
       name: "subcategory",
@@ -155,6 +157,7 @@ export const Products: CollectionConfig = {
       admin: {
         description: "If checked, this product will be archived",
       },
+      index: true,
     },
     {
       name: "isPrivate",
