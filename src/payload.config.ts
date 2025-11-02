@@ -16,6 +16,8 @@ import { Reviews } from "@/collections/Reviews";
 import { Tags } from "@/collections/Tags";
 import { Tenants } from "@/collections/Tenants";
 import { multiTenantPlugin } from "@payloadcms/plugin-multi-tenant";
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
+
 import { Categories } from "./collections/Categories";
 import { Media } from "./collections/Media";
 import { Users } from "./collections/Users";
@@ -73,6 +75,18 @@ export default buildConfig({
         includeDefaultField: false,
       },
       userHasAccessToAllTenants: (user) => isSuperAdmin(user),
+    }),
+    vercelBlobStorage({
+      enabled: true,
+      collections: {
+        media: true, // Apply to your Media collection
+      },
+      // Token is automatically set by Vercel when you enable Blob storage
+      token: process.env.BLOB_READ_WRITE_TOKEN || "",
+      // For files > 4.5MB on Vercel, use client uploads
+      clientUploads: true,
+      // Optional: Add random suffix to prevent filename collisions
+      addRandomSuffix: true,
     }),
   ],
 });
