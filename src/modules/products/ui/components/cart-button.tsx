@@ -1,10 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useCart } from "@/modules/checkout/hooks/use-cart";
 import { Button } from "@/components/ui/button";
-import { QuantitySelector } from "./quantity-selector";
+import { useCart } from "@/modules/checkout/hooks/use-cart";
 import { useState } from "react";
+import { QuantitySelector } from "./quantity-selector";
 
 interface Props {
   tenantSlug: string;
@@ -38,8 +37,6 @@ export const CartButton = ({ tenantSlug, productId }: Props) => {
   return (
     <div className="flex items-center gap-2 w-full">
       <QuantitySelector
-        productId={productId}
-        tenantSlug={tenantSlug}
         onQuantityChange={handleQuantityChange}
         initialQuantity={isInCart ? cartQuantity : quantity}
       />

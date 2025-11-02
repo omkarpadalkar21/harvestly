@@ -239,12 +239,12 @@ export const ProductViewSkeleton = () => {
             </div>
 
             {/* Price section */}
-            <div className={"px-6 py-4 border-b bg-neutral-50"}>
-              <div className={"flex items-baseline gap-2 mb-2"}>
+            <div className={"px-6 flex justify-between py-4 border-b bg-neutral-50"}>
+              <div className={"flex items-baseline gap-2"}>
                 <div className="h-10 bg-neutral-200 rounded animate-pulse w-32" />
                 <div className="h-5 bg-neutral-200 rounded animate-pulse w-20" />
               </div>
-              <div className="h-4 bg-neutral-200 rounded animate-pulse w-48" />
+              <div className="h-4 bg-neutral-200 rounded animate-pulse w-40 self-start" />
             </div>
 
             {/* Action buttons */}
