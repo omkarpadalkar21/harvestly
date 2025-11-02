@@ -12,7 +12,7 @@ const Navbar = ({ subdomain }: Props) => {
       <div className="max-w-(--breakpoint-xl) mx-auto flex justify-between items-center h-full px-4 lg:px-12">
         <p className="text-xl">Checkout</p>
         <Button variant={"secondary"} asChild>
-          <Link href={generateTenantURL(subdomain)}>Continue Shopping</Link>
+          <Link href={"/"}>Continue Shopping</Link>
         </Button>
       </div>
     </nav>
