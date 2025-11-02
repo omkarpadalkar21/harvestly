@@ -157,25 +157,23 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
           <div className={"col-span-1 lg:border-l border-black"}>
             <div className={"border-black  h-full"}>
               <div className={"flex flex-col gap-4 p-6 border-b border-black"}>
-                <div className={"flex flex-row items-center gap-2 "}>
-                  <CartButton tenantSlug={subdomain} productId={productId} />
-                  <Button
-                    variant={"secondary"}
-                    onClick={() => {
-                      setIsCopied(true);
-                      navigator.clipboard.writeText(window.location.href);
-                      toast.success("URL Copied to clipboard!");
+                <CartButton tenantSlug={subdomain} productId={productId} />
+                <Button
+                  variant={"secondary"}
+                  onClick={() => {
+                    setIsCopied(true);
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("URL Copied to clipboard!");
 
-                      setTimeout(() => {
-                        setIsCopied(false);
-                      }, 2000);
-                    }}
-                    disabled={isCopied}
-                    className="px-4 py-3"
-                  >
-                    {isCopied ? <CheckIcon /> : <LinkIcon />}
-                  </Button>
-                </div>
+                    setTimeout(() => {
+                      setIsCopied(false);
+                    }, 2000);
+                  }}
+                  disabled={isCopied}
+                  className="w-full px-4 py-3"
+                >
+                  {isCopied ? <CheckIcon /> : <LinkIcon />}
+                </Button>
                 <p className={"text-center font-medium"}>
                   {data.refundPolicy === "no-refunds"
                     ? "No refunds"
