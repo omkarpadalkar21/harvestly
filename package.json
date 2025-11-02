@@ -12,7 +12,8 @@
     "db:fresh": "payload migrate:fresh",
     "seed": "tsx src/seed.ts",
     "seed:products": "tsx src/seed-products.ts",
-    "migrate:descriptions": "tsx scripts/migrate-descriptions.ts"
+    "migrate:descriptions": "tsx scripts/migrate-descriptions.ts",
+    "migrate-to-cloud": "tsx scripts/migrate-to-cloud.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
