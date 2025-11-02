@@ -2,7 +2,6 @@ import { isSuperAdmin } from "@/lib/access";
 import { Tenant } from "@/payload-types";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import type { CollectionConfig } from "payload";
-import { tr } from "zod/v4/locales";
 
 export const Products: CollectionConfig = {
   slug: "products",

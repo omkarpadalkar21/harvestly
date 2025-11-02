@@ -15,8 +15,11 @@ const SubcategoryMenu = ({
 
   onSubcategoryClick,
 }: SubcategoryMenuProps) => {
-  if (!isOpen || !category.subcategories || category.subcategories.length === 0)
-    return null;
+  const subs = Array.isArray(category.subcategories)
+    ? (category.subcategories as Category[])
+    : ((category.subcategories?.docs as Category[]) ?? []);
+
+  if (!isOpen || subs.length === 0) return null;
 
   const backgroundColor = category.colour || "#f5f5f5";
 
@@ -31,7 +34,7 @@ const SubcategoryMenu = ({
         }
       >
         <div>
-          {category.subcategories?.map((subcategory: Category) => (
+          {subs.map((subcategory: Category) => (
             <Link
               href={`/${category.slug}/${subcategory.slug}`}
               key={subcategory.slug}

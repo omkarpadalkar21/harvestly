@@ -20,10 +20,16 @@ export const SearchFilters = () => {
   const activeCategoryName = activeCategoryData?.name || null;
 
   const activeSubcategory = params.subcategory as string | undefined;
-  const activeSubcategoryName =
-    activeCategoryData?.subcategories?.find(
+  const activeSubcategoryName = (() => {
+    if (!activeCategoryData) return null;
+    const subs = Array.isArray(activeCategoryData.subcategories)
+      ? activeCategoryData.subcategories
+      : (activeCategoryData.subcategories?.docs as typeof data) ?? [];
+    const found = subs.find(
       (subcategory) => subcategory.slug === activeSubcategory
-    )?.name || null;
+    );
+    return found?.name || null;
+  })();
 
   return (
     <div

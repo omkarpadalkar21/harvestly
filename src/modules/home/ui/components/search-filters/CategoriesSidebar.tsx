@@ -32,6 +32,13 @@ const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
 
   const currentCategories = parentCategories ?? data ?? [];
 
+  const getSubcategories = (category: CatgegoriesGetManyOutput[1]) => {
+    const subs = Array.isArray(category.subcategories)
+      ? category.subcategories
+      : (category.subcategories?.docs as CatgegoriesGetManyOutput) ?? [];
+    return subs as CatgegoriesGetManyOutput;
+  };
+
   const handleOpenChange = (open: boolean) => {
     setSelectedCategory(null);
     setParentCategories(null);
@@ -40,8 +47,9 @@ const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
 
   //If we have parent categories, show those, otherwise show root categories
   const handleCategoryClick = (category: CatgegoriesGetManyOutput[1]) => {
-    if (category.subcategories && category.subcategories.length > 0) {
-      setParentCategories(category.subcategories as CatgegoriesGetManyOutput);
+    const subs = getSubcategories(category);
+    if (subs.length > 0) {
+      setParentCategories(subs);
       setSelectedCategory(category);
     } else {
       //This is a leaf category, no subcategories
@@ -85,7 +93,9 @@ const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
               Back
             </button>
           )}
-          {currentCategories.map((category) => (
+          {currentCategories.map((category) => {
+            const subs = getSubcategories(category);
+            return (
             <button
               key={category.slug}
               className={
@@ -94,11 +104,11 @@ const CategoriesSidebar = ({ open, onOpenChange }: Props) => {
               onClick={() => handleCategoryClick(category)}
             >
               {category.name}
-              {category.subcategories && category.subcategories.length > 0 && (
+              {subs.length > 0 && (
                 <ChevronRightIcon className={"size-4"} />
               )}
             </button>
-          ))}
+          );})}
         </ScrollArea>
       </SheetContent>
     </Sheet>
