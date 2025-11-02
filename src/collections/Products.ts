@@ -2,6 +2,7 @@ import { isSuperAdmin } from "@/lib/access";
 import { Tenant } from "@/payload-types";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import type { CollectionConfig } from "payload";
+import { tr } from "zod/v4/locales";
 
 export const Products: CollectionConfig = {
   slug: "products",
@@ -28,6 +29,7 @@ export const Products: CollectionConfig = {
       admin: {
         position: "sidebar",
       },
+      index: true,
     },
     {
       name: "name",
@@ -87,6 +89,7 @@ export const Products: CollectionConfig = {
           exists: false,
         },
       },
+      index: true,
     },
     {
       name: "subcategory",
@@ -155,6 +158,7 @@ export const Products: CollectionConfig = {
       admin: {
         description: "If checked, this product will be archived",
       },
+      index: true,
     },
     {
       name: "isPrivate",

@@ -51,7 +51,15 @@ export default buildConfig({
   },
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || "",
+    connectOptions: {
+      maxPoolSize: 10, // Maximum connections in the pool
+      minPoolSize: 2, // Minimum connections maintained
+      socketTimeoutMS: 45000, // Increased from default 30s
+      serverSelectionTimeoutMS: 10000,
+      retryWrites: true,
+    },
   }),
+
   sharp,
   plugins: [
     payloadCloudPlugin(),
