@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
 const ProductSort = () => {
   const [filters, setFilters] = useProductFilters();
   return (
-    <div className={"flex items-center gap-2"}>
+    <div className={"flex items-center gap-2 overflow-x-auto flex-nowrap pb-2 scrollbar-hide"}>
       <Button
         size={"sm"}
         className={cn(
-          "rounded-full bg-white hover:bg-white ",
+          "rounded-full bg-white hover:bg-white shrink-0",
           filters.sort !== "popularity" &&
             "bg-transparent  border-transparent hover:border-border hover:bg-transparent",
         )}
@@ -23,7 +23,7 @@ const ProductSort = () => {
       <Button
         size={"sm"}
         className={cn(
-          "rounded-full bg-white hover:bg-white",
+          "rounded-full bg-white hover:bg-white shrink-0",
           filters.sort !== "freshness" &&
             "bg-transparent border-transparent hover:border-border hover:bg-transparent",
         )}
@@ -35,7 +35,7 @@ const ProductSort = () => {
       <Button
         size={"sm"}
         className={cn(
-          "rounded-full bg-white hover:bg-white",
+          "rounded-full bg-white hover:bg-white shrink-0",
           filters.sort !== "price-asc" &&
             "bg-transparent border-transparent hover:border-border hover:bg-transparent",
         )}
@@ -47,7 +47,7 @@ const ProductSort = () => {
       <Button
         size={"sm"}
         className={cn(
-          "rounded-full bg-white hover:bg-white",
+          "rounded-full bg-white hover:bg-white shrink-0",
           filters.sort !== "price-desc" &&
             "bg-transparent border-transparent hover:border-border hover:bg-transparent",
         )}
@@ -59,7 +59,7 @@ const ProductSort = () => {
       <Button
         size={"sm"}
         className={cn(
-          "rounded-full bg-white hover:bg-white",
+          "rounded-full bg-white hover:bg-white shrink-0",
           filters.sort !== "rating" &&
             "bg-transparent border-transparent hover:border-border hover:bg-transparent",
         )}
