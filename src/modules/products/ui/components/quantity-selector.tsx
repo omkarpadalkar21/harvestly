@@ -5,15 +5,11 @@ import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 interface QuantitySelectorProps {
-  productId: string;
-  tenantSlug: string;
   onQuantityChange: (quantity: number) => void;
   initialQuantity?: number;
 }
 
 export const QuantitySelector = ({
-  productId,
-  tenantSlug,
   onQuantityChange,
   initialQuantity = 1,
 }: QuantitySelectorProps) => {

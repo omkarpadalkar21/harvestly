@@ -1,10 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useCart } from "@/modules/checkout/hooks/use-cart";
 import { Button } from "@/components/ui/button";
-import { QuantitySelector } from "./quantity-selector";
+import { useCart } from "@/modules/checkout/hooks/use-cart";
 import { useState } from "react";
+import { QuantitySelector } from "./quantity-selector";
 
 interface Props {
   tenantSlug: string;
@@ -36,45 +35,27 @@ export const CartButton = ({ tenantSlug, productId }: Props) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex items-center gap-2 w-full">
+      <QuantitySelector
+        onQuantityChange={handleQuantityChange}
+        initialQuantity={isInCart ? cartQuantity : quantity}
+      />
       {!isInCart ? (
-        <div className="flex items-center gap-2">
-          <QuantitySelector
-            productId={productId}
-            tenantSlug={tenantSlug}
-            onQuantityChange={handleQuantityChange}
-            initialQuantity={quantity}
-          />
-          <Button
-            variant="secondary"
-            className="flex-1 py-3 bg-green-600"
-            onClick={handleAddToCart}
-          >
-            Add to cart
-          </Button>
-        </div>
+        <Button
+          variant="secondary"
+          className="flex-1 py-3 bg-green-600"
+          onClick={handleAddToCart}
+        >
+          Add to cart
+        </Button>
       ) : (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between px-4 py-2 bg-green-50 border border-green-600 rounded-sm">
-            <span className="font-medium text-green-700">In Cart</span>
-            <span className="text-sm text-green-600">{cartQuantity} item{cartQuantity !== 1 ? 's' : ''}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <QuantitySelector
-              productId={productId}
-              tenantSlug={tenantSlug}
-              onQuantityChange={handleQuantityChange}
-              initialQuantity={cartQuantity}
-            />
-            <Button
-              variant="outline"
-              onClick={handleRemoveFromCart}
-              className="flex-1 border-black hover:bg-red-50"
-            >
-              Remove
-            </Button>
-          </div>
-        </div>
+        <Button
+          variant="outline"
+          onClick={handleRemoveFromCart}
+          className="flex-1 border-black hover:bg-red-50"
+        >
+          Remove from cart
+        </Button>
       )}
     </div>
   );

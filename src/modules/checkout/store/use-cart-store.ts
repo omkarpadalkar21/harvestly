@@ -91,7 +91,7 @@ export const useCartStore = create<CartState>()(
       name: "harvestly-cart",
       storage: createJSONStorage(() => localStorage),
       version: 1,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
         if (version === 0) {
           const state = persistedState as { tenantCarts: Record<string, { productIds: (string | CartItem)[] }> };
           const migratedCarts: Record<string, TenantCart> = {};
