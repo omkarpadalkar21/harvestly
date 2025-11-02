@@ -129,24 +129,16 @@ export const productsRouter = createTRPCRouter({
       };
       let sort: Sort = "-createdAt";
 
-      if (input.sort === "popularity") {
-        sort = "name";
-      }
-
       if (input.sort === "freshness") {
         sort = "-createdAt";
       }
 
       if (input.sort === "price-asc") {
-        sort = "-createdAt";
+        sort = "price";
       }
 
       if (input.sort === "price-desc") {
-        sort = "-createdAt";
-      }
-
-      if (input.sort === "rating") {
-        sort = "+createdAt";
+        sort = "-price";
       }
 
       if (input.minPrice) {
@@ -247,9 +239,32 @@ export const productsRouter = createTRPCRouter({
         })
       );
 
+      let orderedDocs = dataWithSummarizedReviews;
+      if (input.sort === "rating") {
+        orderedDocs = [...dataWithSummarizedReviews].sort((a, b) => {
+          if (b.reviewRating !== a.reviewRating) {
+            return b.reviewRating - a.reviewRating;
+          }
+          if (b.reviewCount !== a.reviewCount) {
+            return b.reviewCount - a.reviewCount;
+          }
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      } else if (input.sort === "popularity") {
+        orderedDocs = [...dataWithSummarizedReviews].sort((a, b) => {
+          if (b.reviewCount !== a.reviewCount) {
+            return b.reviewCount - a.reviewCount;
+          }
+          if (b.reviewRating !== a.reviewRating) {
+            return b.reviewRating - a.reviewRating;
+          }
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      }
+
       return {
         ...data,
-        docs: dataWithSummarizedReviews.map((doc) => ({
+        docs: orderedDocs.map((doc) => ({
           ...doc,
           image: doc.image as Media | null,
           tenant: doc.tenant as Tenant & { image: Media | null },
