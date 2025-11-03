@@ -13,7 +13,9 @@
     "seed": "tsx src/seed.ts",
     "seed:products": "tsx src/seed-products.ts",
     "migrate:descriptions": "tsx scripts/migrate-descriptions.ts",
-    "migrate-to-cloud": "tsx scripts/migrate-to-cloud.ts"
+    "migrate-to-cloud": "tsx scripts/migrate-to-cloud.ts",
+    "fix-media-urls": "tsx scripts/fix-media-urls.ts",
+    "reupload-media": "tsx scripts/reupload-media.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
