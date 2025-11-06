@@ -12,7 +12,7 @@ export const productsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const headers = await getHeaders();
@@ -84,7 +84,7 @@ export const productsRouter = createTRPCRouter({
           const rating = Number(key);
           const count = ratingDistribution[rating] || 0;
           ratingDistribution[rating] = Math.round(
-            (count / reviews.totalDocs) * 100
+            (count / reviews.totalDocs) * 100,
           );
         });
       }
@@ -107,12 +107,13 @@ export const productsRouter = createTRPCRouter({
         limit: z.number().default(DEFAULT_LIMIT),
         category: z.string().nullable().optional(),
         subcategory: z.string().nullable().optional(),
+        search: z.string().nullable().optional(),
         minPrice: z.string().nullable().optional(),
         maxPrice: z.string().nullable().optional(),
         tags: z.array(z.string()).nullable().optional(),
         sort: z.enum(sortValues).nullable().optional(),
         tenantSubdomain: z.string().nullable().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Where = {
@@ -170,6 +171,12 @@ export const productsRouter = createTRPCRouter({
         where["tags.name"] = { in: input.tags };
       }
 
+      if (input.search) {
+        where["name"] = {
+          like: input.search,
+        };
+      }
+
       const data = await ctx.db.find({
         collection: "products",
         depth: 1, // Reduced from 2 - only 1 level of nesting
@@ -197,11 +204,11 @@ export const productsRouter = createTRPCRouter({
               reviewsData.docs.length > 0
                 ? reviewsData.docs.reduce(
                     (acc, review) => acc + review.rating,
-                    0
+                    0,
                   ) / reviewsData.totalDocs
                 : 0,
           };
-        })
+        }),
       );
 
       let orderedDocs = dataWithSummarizedReviews;
