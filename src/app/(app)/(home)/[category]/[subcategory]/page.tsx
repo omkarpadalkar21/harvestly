@@ -6,6 +6,8 @@ import ProductListView from "@/modules/products/ui/views/product-list-view";
 import type { SearchParams } from "nuqs/server";
 import { DEFAULT_LIMIT } from "@/constants";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ category: string; subcategory: string }>;
   searchParams: Promise<SearchParams>;
