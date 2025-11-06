@@ -17,5 +17,9 @@ export const Media: CollectionConfig = {
       required: true,
     },
   ],
-  upload: true,
+  upload: {
+    // Don't use staticDir - let Vercel Blob handle it
+    // adminThumbnail: 'thumbnail',
+    mimeTypes: ["image/*"],
+  },
 };
