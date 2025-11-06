@@ -67,6 +67,7 @@ export const ordersRouter = createTRPCRouter({
         depth: 0,
         page: input.cursor,
         limit: input.limit,
+        sort: "-createdAt",
         where: {
           user: {
             equals: ctx.session.user.id,
@@ -74,20 +75,36 @@ export const ordersRouter = createTRPCRouter({
         },
       });
 
-      const productIds = ordersData.docs.map((order) => order.product);
+      const orderedProductIds = ordersData.docs
+        .map((order) =>
+          typeof order.product === "string" ? order.product : order.product?.id,
+        )
+        .filter((id): id is string => typeof id === "string");
+
+      // Deduplicate while preserving order (latest-first)
+      const seen = new Set<string>();
+      const uniqueOrderedIds = orderedProductIds.filter((id) => {
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
 
       const productsData = await ctx.db.find({
         collection: "products",
         pagination: false,
         where: {
           id: {
-            in: productIds,
+            in: uniqueOrderedIds,
           },
         },
       });
+      const productsById = new Map(productsData.docs.map((doc) => [doc.id, doc]));
+      const orderedProducts = uniqueOrderedIds
+        .map((id) => productsById.get(id))
+        .filter((p): p is typeof productsData.docs[number] => Boolean(p));
 
       const dataWithSummarizedReviews = await Promise.all(
-        productsData.docs.map(async (doc) => {
+        orderedProducts.map(async (doc) => {
           const reviewsData = await ctx.db.find({
             collection: "reviews",
             pagination: false,
