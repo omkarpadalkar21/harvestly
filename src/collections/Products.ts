@@ -1,4 +1,4 @@
-import { isSuperAdmin } from "@/lib/access";
+import { isSuperAdmin, isSellerOrSuperAdmin } from "@/lib/access";
 import { Tenant } from "@/payload-types";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import type { CollectionConfig } from "payload";
@@ -12,12 +12,22 @@ export const Products: CollectionConfig = {
   access: {
     create: ({ req }) => {
       if (isSuperAdmin(req.user)) return true;
+      
+      // Check if user has tenants array and at least one tenant
+      if (!req.user?.tenants || req.user.tenants.length === 0) {
+        return false;
+      }
 
-      const tenant = req.user?.tenants?.[0].tenant as Tenant;
+      const firstTenant = req.user.tenants[0];
+      if (!firstTenant || typeof firstTenant !== 'object' || !firstTenant.tenant) {
+        return false;
+      }
 
+      const tenant = firstTenant.tenant as Tenant;
       return Boolean(tenant?.stripeDetailsSubmitted);
     },
     delete: ({ req }) => isSuperAdmin(req.user),
+    admin: ({ req }) => isSellerOrSuperAdmin(req.user),
   },
   fields: [
     {

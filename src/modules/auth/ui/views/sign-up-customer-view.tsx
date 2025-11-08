@@ -2,7 +2,6 @@
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -14,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Poppins } from "next/font/google";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { registerSchema } from "@/modules/auth/schemas";
+import { registerCustomerSchema } from "@/modules/auth/schemas";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -30,24 +29,25 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
-const SignUpView = () => {
+const SignUpCustomerView = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const register = useMutation(
-    trpc.auth.registerSeller.mutationOptions({
+    trpc.auth.registerCustomer.mutationOptions({
       onError: (error) => {
         toast.error(error.message);
       },
       onSuccess: async () => {
+        toast.success("Account created successfully");
         await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
         router.push("/");
       },
-    }),
+    })
   );
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<z.infer<typeof registerCustomerSchema>>({
     mode: "all",
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerCustomerSchema),
     defaultValues: {
       username: "",
       password: "",
@@ -55,14 +55,10 @@ const SignUpView = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
+  const onSubmit = (values: z.infer<typeof registerCustomerSchema>) => {
     register.mutate(values);
   };
 
-  const username = form.watch("username");
-  const usernameErrors = form.formState.errors.username;
-
-  const showPreview = username && !usernameErrors;
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-6"}>
       <div
@@ -85,7 +81,7 @@ const SignUpView = () => {
                   <p
                     className={cn(
                       "hidden md:flex md:text-xl lg:text-3xl",
-                      poppins.className,
+                      poppins.className
                     )}
                   >
                     Harvestly
@@ -103,9 +99,7 @@ const SignUpView = () => {
                 </Link>
               </Button>
             </div>
-            <h1 className={"text-4xl font-medium"}>
-              Independent, Profitable & Yours.
-            </h1>
+            <h1 className={"text-4xl font-medium"}>Join Our Community</h1>
             <FormField
               name={"username"}
               render={({ field }) => (
@@ -114,12 +108,6 @@ const SignUpView = () => {
                   <FormControl>
                     <Input {...field} className={"border-black"} />
                   </FormControl>
-                  <FormDescription
-                    className={cn("hidden", showPreview && "block")}
-                  >
-                    Your store will be available at&nbsp;
-                    <strong>{username}</strong>
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -161,7 +149,7 @@ const SignUpView = () => {
               variant={"default"}
               className={"hover:bg-green-600 hover:text-primary"}
             >
-              Create Account
+              Create Customer Account
             </Button>
           </form>
         </Form>
@@ -178,10 +166,10 @@ const SignUpView = () => {
           playsInline
           aria-hidden="true"
         >
-          <source src="/signup.mp4" type="video/mp4" />
+          <source src="/signin.mp4" type="video/mp4" />
         </video>
       </div>
     </div>
   );
 };
-export default SignUpView;
+export default SignUpCustomerView;

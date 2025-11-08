@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Poppins } from "next/font/google";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { registerSchema } from "@/modules/auth/schemas";
+import { registerSellerSchema } from "@/modules/auth/schemas";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -30,7 +30,7 @@ const poppins = Poppins({
   weight: ["700"],
 });
 
-const SignUpView = () => {
+const SignUpSellerView = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -40,14 +40,15 @@ const SignUpView = () => {
         toast.error(error.message);
       },
       onSuccess: async () => {
+        toast.success("Account created successfully");
         await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
         router.push("/");
       },
     }),
   );
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<z.infer<typeof registerSellerSchema>>({
     mode: "all",
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSellerSchema),
     defaultValues: {
       username: "",
       password: "",
@@ -55,7 +56,7 @@ const SignUpView = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
+  const onSubmit = (values: z.infer<typeof registerSellerSchema>) => {
     register.mutate(values);
   };
 
@@ -161,7 +162,7 @@ const SignUpView = () => {
               variant={"default"}
               className={"hover:bg-green-600 hover:text-primary"}
             >
-              Create Account
+              Create Seller Account
             </Button>
           </form>
         </Form>
@@ -184,4 +185,4 @@ const SignUpView = () => {
     </div>
   );
 };
-export default SignUpView;
+export default SignUpSellerView;

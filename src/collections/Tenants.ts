@@ -1,4 +1,4 @@
-import { isSuperAdmin } from "@/lib/access";
+import { isSuperAdmin, isSellerOrSuperAdmin } from "@/lib/access";
 import type { CollectionConfig } from "payload";
 
 export const Tenants: CollectionConfig = {
@@ -9,6 +9,7 @@ export const Tenants: CollectionConfig = {
   access: {
     create: ({ req }) => isSuperAdmin(req.user),
     delete: ({ req }) => isSuperAdmin(req.user),
+    admin: ({ req }) => isSellerOrSuperAdmin(req.user),
   },
   fields: [
     {

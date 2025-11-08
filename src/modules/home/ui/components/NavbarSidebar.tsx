@@ -11,6 +11,8 @@ import { navbarItems } from "./Navbar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import type { User } from "@/payload-types";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -26,9 +28,12 @@ interface Props {
   items: typeof navbarItems;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  user?: User | null;
+  onLogout?: () => void;
+  isLoggingOut?: boolean;
 }
 
-const NavbarSidebar = ({ items, open, onOpenChange }: Props) => {
+const NavbarSidebar = ({ items, open, onOpenChange, user, onLogout, isLoggingOut }: Props) => {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="p-0 transition-none" side="left">
@@ -65,20 +70,54 @@ const NavbarSidebar = ({ items, open, onOpenChange }: Props) => {
             </Link>
           ))}
           <div className="flex flex-col">
-            <Link
-              href={"sign-in"}
-              className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-white  hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
-              onClick={() => onOpenChange(false)}
-            >
-              Log In
-            </Link>
-            <Link
-              href={"sign-up"}
-              className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-black text-white hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
-              onClick={() => onOpenChange(false)}
-            >
-              Start Selling
-            </Link>
+            {user ? (
+              <>
+                {(user.roles?.includes("seller") || user.roles?.includes("super-admin")) ? (
+                  <Link
+                    href={"/admin"}
+                    className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-black text-white hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      onLogout?.();
+                      onOpenChange(false);
+                    }}
+                    disabled={isLoggingOut}
+                    className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-black text-white hover:bg-green-600 hover:text-black transition-colors text-lg h-auto p-4"
+                  >
+                    Sign Out
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Link
+                  href={"sign-in"}
+                  className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-white  hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Log In
+                </Link>
+                <Link
+                  href={"sign-up-customer"}
+                  className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-white hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  href={"sign-up-seller"}
+                  className="border-l-0 border-b border-r-0 border-t w-full rounded-none bg-black text-white hover:bg-green-600 hover:text-black transition-colors text-lg flex items-center justify-center p-4"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Sell on Harvestly
+                </Link>
+              </>
+            )}
           </div>
         </ScrollArea>
       </SheetContent>

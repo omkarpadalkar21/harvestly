@@ -23,6 +23,13 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check if accessing admin panel - Payload CMS will handle authentication
+  // and role-based access through its built-in access control
+  if (url.pathname.startsWith("/admin")) {
+    // Let Payload CMS handle the authentication and authorization
+    return NextResponse.next();
+  }
+
   //extract the hostname, i.e. omkar-farms.harvestly.com
   const hostname = req.headers.get("host") || "";
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "";
