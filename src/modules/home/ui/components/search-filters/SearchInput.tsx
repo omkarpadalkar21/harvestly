@@ -69,7 +69,7 @@ const SearchInput = ({ disabled }: Props) => {
 const CartButton = () => {
   const tenantCarts = useCartStore((state) => state.tenantCarts);
   const activeTenants = Object.entries(tenantCarts).filter(
-    ([_, cart]) => cart.productIds.length > 0
+    ([, cart]) => cart.productIds.length > 0
   );
 
   if (activeTenants.length === 0) {
