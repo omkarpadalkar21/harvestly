@@ -1,4 +1,4 @@
-import { isSuperAdmin } from "@/lib/access";
+import { isSellerOrSuperAdmin, isSuperAdmin } from "@/lib/access";
 import { tenantsArrayField } from "@payloadcms/plugin-multi-tenant/fields";
 import type { CollectionConfig } from "payload";
 
@@ -30,6 +30,7 @@ export const Users: CollectionConfig = {
       if (isSuperAdmin(req.user)) return true;
       return id === req.user?.id;
     },
+    admin: ({ req }) => isSellerOrSuperAdmin(req.user),
   },
   admin: {
     useAsTitle: "email",

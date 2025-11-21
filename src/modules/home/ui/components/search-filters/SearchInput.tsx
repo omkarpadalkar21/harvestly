@@ -3,12 +3,19 @@
 import CategoriesSidebar from "@/modules/home/ui/components/search-filters/CategoriesSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookmarkCheckIcon, ListFilterIcon, SearchIcon } from "lucide-react";
+import { ListFilterIcon, SearchIcon, ShoppingCartIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useProductFilters } from "@/modules/hooks/use-product-filters";
+import { useCartStore } from "@/modules/checkout/store/use-cart-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Props {
   disabled?: boolean;
@@ -53,14 +60,57 @@ const SearchInput = ({ disabled }: Props) => {
         <ListFilterIcon />
       </Button>
       {session.data?.user && (
-        <Button asChild>
-          <Link prefetch href={"/orders"}>
-            <BookmarkCheckIcon />
-            Orders
-          </Link>
-        </Button>
+        <CartButton />
       )}
     </div>
+  );
+};
+
+const CartButton = () => {
+  const tenantCarts = useCartStore((state) => state.tenantCarts);
+  const activeTenants = Object.entries(tenantCarts).filter(
+    ([_, cart]) => cart.productIds.length > 0
+  );
+
+  if (activeTenants.length === 0) {
+    return (
+      <Button variant={"secondary"} disabled>
+        <ShoppingCartIcon />
+        Cart
+      </Button>
+    );
+  }
+
+  if (activeTenants.length === 1) {
+    const [slug] = activeTenants[0];
+    return (
+      <Button asChild>
+        <Link prefetch href={`/tenants/${slug}/checkout`}>
+          <ShoppingCartIcon />
+          Cart
+        </Link>
+      </Button>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button>
+          <ShoppingCartIcon />
+          Cart
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {activeTenants.map(([slug]) => (
+          <DropdownMenuItem key={slug} asChild>
+            <Link href={`/tenants/${slug}/checkout`} className="w-full cursor-pointer">
+              Checkout {slug}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

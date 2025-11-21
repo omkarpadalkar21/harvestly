@@ -56,6 +56,10 @@ export const navbarItems = [
     href: "/features",
     children: "Features",
   },
+  {
+    href: "/orders",
+    children: "Orders",
+  },
 ];
 
 const Navbar = () => {
@@ -80,6 +84,13 @@ const Navbar = () => {
       },
     })
   );
+  const filteredNavbarItems = navbarItems.filter((item) => {
+    if (item.href === "/orders") {
+      return session.data?.user?.roles?.includes("customer");
+    }
+    return true;
+  });
+
   return (
     <nav className="flex h-20 border-b border-black justify-between font-medium bg-white">
       <Link href={"/"} className=" flex items-center pl-6">
@@ -102,13 +113,13 @@ const Navbar = () => {
       <NavbarSidebar
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
-        items={navbarItems}
+        items={filteredNavbarItems}
         user={session.data?.user}
         onLogout={() => logout.mutate()}
         isLoggingOut={logout.isPending}
       />
       <div className="items-center hidden gap-4 lg:flex">
-        {navbarItems.map((item) => (
+        {filteredNavbarItems.map((item) => (
           <NavbarItems
             key={item.href}
             {...item}

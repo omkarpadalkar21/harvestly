@@ -112,18 +112,18 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
 
             <div
               className={
-                "px-6 flex justify-between py-4 border-b bg-neutral-50"
+                "px-6 flex flex-col sm:flex-row sm:justify-between py-4 border-b bg-neutral-50 gap-4 sm:gap-0"
               }
             >
               <div className={"flex items-baseline gap-2"}>
                 <p className={"text-3xl font-medium text-red-700"}>
                   ₹{data.price}
                 </p>
-                <p className={"text-sm text-neutral-600"}>
+                <p className={"text-sm text-neutral-600 whitespace-nowrap"}>
                   {data.quantity.amount} {data.quantity.unit}
                 </p>
               </div>
-              <p className={"text-sm mt-2 font-medium"}>
+              <p className={"text-sm font-medium sm:mt-2"}>
                 {data.refundPolicy === "no-refunds"
                   ? "No refunds"
                   : `${data.refundPolicy} money back guarantee`}
