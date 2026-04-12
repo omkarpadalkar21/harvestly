@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { StarIcon } from "lucide-react";
+import { StatusBadge } from "@/modules/orders/ui/components/status-badge";
 
 interface ProductCardProps {
   id: string;
@@ -14,6 +15,7 @@ interface ProductCardProps {
     amount: number;
     unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "other";
   };
+  orderStatus?: string;
 }
 
 export const ProductCard = ({
@@ -25,6 +27,7 @@ export const ProductCard = ({
   reviewRating,
   reviewCount,
   quantity,
+  orderStatus,
 }: ProductCardProps) => {
   return (
     <Link prefetch href={`/orders/${id}`}>
@@ -40,6 +43,11 @@ export const ProductCard = ({
             fill
             className={"object-cover object-center rounded-t-lg"}
           />
+          {orderStatus && (
+            <div className="absolute top-2 left-2">
+              <StatusBadge status={orderStatus} />
+            </div>
+          )}
         </div>
         <div className={"p-3 md:p-4 border-y flex flex-col gap-2 flex-1"}>
           <div className={"flex justify-between items-center"}>

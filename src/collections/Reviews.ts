@@ -40,5 +40,34 @@ export const Reviews: CollectionConfig = {
       hasMany: false,
       required: true,
     },
+    {
+      name: "verifiedPurchase",
+      type: "checkbox",
+      defaultValue: false,
+      access: { update: ({ req }) => isSuperAdmin(req.user) },
+      admin: { description: "Auto-set to true if buyer has a completed order for this product." },
+    },
   ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        if (operation === "create" && data) {
+          const existing = await req.payload.find({
+            collection: "reviews",
+            where: {
+              and: [
+                { user: { equals: data.user } },
+                { product: { equals: data.product } },
+              ],
+            },
+            limit: 1,
+          });
+          if (existing.totalDocs > 0) {
+            throw new Error("You have already reviewed this product.");
+          }
+        }
+        return data;
+      },
+    ],
+  },
 };

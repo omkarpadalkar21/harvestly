@@ -13,6 +13,7 @@ interface ProductCardProps {
   reviewRating: number;
   reviewCount: number;
   price: number;
+  stock?: number | null;
   quantity: {
     amount: number;
     unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "other";
@@ -28,23 +29,23 @@ export const ProductCard = ({
   reviewRating,
   reviewCount,
   price,
+  stock,
   quantity,
 }: ProductCardProps) => {
   const router = useRouter();
+  const isOutOfStock = typeof stock === "number" && stock === 0;
+  const isLowStock = typeof stock === "number" && stock > 0 && stock <= 10;
 
   const handleUserClick = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-
     router.push(generateTenantURL(tenantSubdomain));
   };
 
   return (
     <Link href={`${generateTenantURL(tenantSubdomain)}/products/${id}`}>
       <div
-        className={
-          "hover:shadow-lg transition-shadow duration-200 border border-black rounded-lg bg-white h-full flex flex-col"
-        }
+        className={`hover:shadow-lg transition-shadow duration-200 border border-black rounded-lg bg-white h-full flex flex-col ${isOutOfStock ? "opacity-70" : ""}`}
       >
         <div className={"relative aspect-square"}>
           <Image
@@ -53,6 +54,21 @@ export const ProductCard = ({
             fill
             className={"object-cover object-center rounded-t-lg"}
           />
+          {/* Stock badge overlay */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-t-lg">
+              <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded-sm border border-black">
+                Out of Stock
+              </span>
+            </div>
+          )}
+          {isLowStock && !isOutOfStock && (
+            <div className="absolute top-2 right-2">
+              <span className="bg-amber-100 border border-amber-400 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                Low Stock
+              </span>
+            </div>
+          )}
         </div>
         <div className={"p-4 border-y flex flex-col gap-2 flex-1"}>
           <div className={"flex justify-between items-center"}>
@@ -81,8 +97,27 @@ export const ProductCard = ({
             )}
             <p className={"text-sm underline font-medium"}>{tenantSubdomain}</p>
           </div>
+
+          {/* Stock status text */}
+          {typeof stock === "number" && (
+            <p
+              className={`text-xs font-medium mt-auto ${
+                isOutOfStock
+                  ? "text-red-600"
+                  : isLowStock
+                    ? "text-amber-600"
+                    : "text-green-700"
+              }`}
+            >
+              {isOutOfStock
+                ? "Out of Stock"
+                : isLowStock
+                  ? `Low Stock – ${stock} left`
+                  : `In Stock (${stock} units)`}
+            </p>
+          )}
         </div>
-        <div className={"p-4  "}>
+        <div className={"p-4"}>
           <div
             className={
               "relative px-2 py-1 border border-black w-fit bg-green-600 text-white"

@@ -75,6 +75,7 @@ export const ProductList = ({
               reviewCount={product.reviewCount}
               price={product.price}
               quantity={product.quantity}
+              stock={product.stock}
             />
           ))}
       </div>

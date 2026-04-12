@@ -102,6 +102,14 @@ const seed = async () => {
       name: "admin",
       subdomain: "admin@shop",
       stripeAccountId: adminStripeAccount.id,
+      location: {
+        city: "Unknown",
+        state: "Unknown",
+        pincode: "000000",
+        lat: 0,
+        lng: 0,
+        serviceRadiusKm: 50,
+      },
     },
   });
   //create admin user

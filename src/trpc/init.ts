@@ -60,3 +60,16 @@ export const cachedCategoryProcedure = baseProcedure;
 export const cachedTenantProcedure = baseProcedure;
 export const protectedCachedProductProcedure = protectedProcedure;
 export const protectedCachedCategoryProcedure = protectedProcedure;
+
+// Seller-restricted procedure (sellers and super-admins only)
+export const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const { isSellerOrSuperAdmin } = await import("@/lib/access");
+  if (!isSellerOrSuperAdmin(ctx.session.user)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only sellers can perform this action",
+    });
+  }
+  return next({ ctx });
+});
+

@@ -62,5 +62,25 @@ export const Users: CollectionConfig = {
         position: "sidebar",
       },
     },
+    {
+      name: "location",
+      type: "group",
+      label: "Preferred Location",
+      fields: [
+        { name: "city", type: "text" },
+        { name: "state", type: "text" },
+        { name: "pincode", type: "text" },
+        {
+          name: "lat",
+          type: "number",
+          admin: { description: "Latitude coordinate" },
+        },
+        {
+          name: "lng",
+          type: "number",
+          admin: { description: "Longitude coordinate" },
+        },
+      ],
+    },
   ],
 };

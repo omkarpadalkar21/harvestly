@@ -48,5 +48,52 @@ export const Orders: CollectionConfig = {
         description: "Stripe account associated with the order",
       },
     },
+    {
+      name: "cartSessionId",
+      type: "text",
+      index: true,
+      admin: {
+        description: "Groups all order items from the same checkout session.",
+      },
+    },
+    {
+      name: "quantity",
+      type: "number",
+      defaultValue: 1,
+      min: 1,
+      admin: { description: "Quantity of the product purchased in this order line." },
+    },
+    {
+      name: "status",
+      type: "select",
+      required: true,
+      defaultValue: "pending",
+      options: [
+        { label: "Pending", value: "pending" },
+        { label: "Confirmed", value: "confirmed" },
+        { label: "Processing", value: "processing" },
+        { label: "Dispatched", value: "dispatched" },
+        { label: "Delivered", value: "delivered" },
+        { label: "Cancelled", value: "cancelled" },
+        { label: "Refunded", value: "refunded" },
+      ],
+      access: {
+        update: ({ req }) => isSellerOrSuperAdmin(req.user),
+      },
+    },
+    {
+      name: "deliveryAddress",
+      type: "group",
+      label: "Delivery Address",
+      fields: [
+        { name: "fullName", type: "text", required: true },
+        { name: "phone", type: "text", required: true },
+        { name: "addressLine1", type: "text", required: true },
+        { name: "addressLine2", type: "text" },
+        { name: "city", type: "text", required: true },
+        { name: "state", type: "text", required: true },
+        { name: "pincode", type: "text", required: true },
+      ],
+    },
   ],
 };

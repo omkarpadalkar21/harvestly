@@ -17,6 +17,7 @@ interface CartState {
   updateQuantity: (tenantSlug: string, productId: string, quantity: number) => void;
   clearCart: (tenantSlug: string) => void;
   clearAllCarts: () => void;
+  hydrateFromServer: (tenantSlug: string, items: CartItem[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -86,6 +87,15 @@ export const useCartStore = create<CartState>()(
           },
         })),
       clearAllCarts: () => set({ tenantCarts: {} }),
+      hydrateFromServer: (tenantSlug, items) =>
+        set((state) => ({
+          tenantCarts: {
+            ...state.tenantCarts,
+            [tenantSlug]: {
+              productIds: items,
+            },
+          },
+        })),
     }),
     {
       name: "harvestly-cart",

@@ -847,6 +847,14 @@ const seedProducts = async () => {
           subdomain: "omkar-farms",
           stripeAccountId: stripeAccount.id,
           stripeDetailsSubmitted: true, // Allow product creation
+          location: {
+            city: "Unknown",
+            state: "Unknown",
+            pincode: "000000",
+            lat: 0,
+            lng: 0,
+            serviceRadiusKm: 50,
+          },
         },
       });
     }
@@ -1016,6 +1024,7 @@ const seedProducts = async () => {
               ? (p as Perishability)
               : "none";
           })(productData.perishability),
+          stock: Math.floor(Math.random() * 50) + 10,
           // refundPolicy will be set automatically by the hook based on perishability
         },
       });

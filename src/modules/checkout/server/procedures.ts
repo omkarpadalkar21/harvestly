@@ -9,6 +9,7 @@ import { PLATFORM_FEE_PERCENTAGE } from "@/constants";
 import { stripe } from "@/lib/stripe";
 import { generateTenantURL } from "@/lib/utils";
 import { CheckoutMetaData, ProductMetaData } from "@/modules/checkout/types";
+import { deliveryAddressSchema } from "@/modules/checkout/schemas";
 import { Media, Tenant } from "@/payload-types";
 import { TRPCError } from "@trpc/server";
 import type Stripe from "stripe";
@@ -56,6 +57,7 @@ export const checkoutRouter = createTRPCRouter({
         productIds: z.array(z.string().min(1)),
         quantities: z.record(z.string(), z.number().min(1)).optional(),
         tenantSubdomain: z.string().min(1),
+        deliveryAddress: deliveryAddressSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -88,6 +90,17 @@ export const checkoutRouter = createTRPCRouter({
           code: "NOT_FOUND",
           message: "Products not found",
         });
+      }
+
+      // Stock validation — check before creating Stripe session
+      for (const product of products.docs) {
+        const requestedQty = input.quantities?.[product.id] ?? 1;
+        if ((product.stock ?? 0) < requestedQty) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Insufficient stock for "${product.name}". Available: ${product.stock ?? 0}`,
+          });
+        }
       }
 
       const tenantsData = await ctx.db.find({
@@ -137,7 +150,8 @@ export const checkoutRouter = createTRPCRouter({
                 id: product.id,
                 name: product.name,
                 price: product.price,
-              } as ProductMetaData,
+                quantity: input.quantities?.[product.id] || 1,
+              } as ProductMetaData & { quantity: number },
             },
           },
         }));
@@ -156,6 +170,7 @@ export const checkoutRouter = createTRPCRouter({
           },
           metadata: {
             userId: ctx.session.user.id,
+            deliveryAddress: JSON.stringify(input.deliveryAddress),
           } as CheckoutMetaData,
           payment_intent_data: {
             application_fee_amount: platformFeeAmount,

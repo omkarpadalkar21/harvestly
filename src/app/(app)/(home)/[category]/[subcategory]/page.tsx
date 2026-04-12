@@ -16,20 +16,24 @@ interface Props {
 const Page = async ({ params, searchParams }: Props) => {
   const { category, subcategory } = await params;
   const filters = await loadProductFilters(searchParams);
-
   const queryClient = getQueryClient();
+
   void queryClient.prefetchInfiniteQuery(
     trpc.products.getMany.infiniteQueryOptions({
       ...filters,
       category,
       subcategory,
       limit: DEFAULT_LIMIT,
+      customerLat: null,
+      customerLng: null,
     }),
   );
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ProductListView category={category} subcategory={subcategory} />
     </HydrationBoundary>
   );
 };
+
 export default Page;

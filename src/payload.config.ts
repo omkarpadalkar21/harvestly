@@ -15,6 +15,8 @@ import { Products } from "@/collections/Products";
 import { Reviews } from "@/collections/Reviews";
 import { Tags } from "@/collections/Tags";
 import { Tenants } from "@/collections/Tenants";
+import { Carts } from "@/collections/Carts";
+import { RefundRequests } from "@/collections/RefundRequests";
 import { multiTenantPlugin } from "@payloadcms/plugin-multi-tenant";
 import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 
@@ -45,6 +47,8 @@ export default buildConfig({
     Tenants,
     Orders,
     Reviews,
+    Carts,
+    RefundRequests,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",

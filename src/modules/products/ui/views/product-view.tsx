@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ProductReviewList } from "@/modules/products/ui/components/review-list";
 
 // import CartButton from "@/modules/products/ui/components/cart-button";
 const CartButton = dynamic(
@@ -115,13 +116,33 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                 "px-6 flex flex-col sm:flex-row sm:justify-between py-4 border-b bg-neutral-50 gap-4 sm:gap-0"
               }
             >
-              <div className={"flex items-baseline gap-2"}>
-                <p className={"text-3xl font-medium text-red-700"}>
-                  ₹{data.price}
-                </p>
-                <p className={"text-sm text-neutral-600 whitespace-nowrap"}>
-                  {data.quantity.amount} {data.quantity.unit}
-                </p>
+              <div className={"flex flex-col gap-1"}>
+                <div className={"flex items-baseline gap-2"}>
+                  <p className={"text-3xl font-medium text-red-700"}>
+                    ₹{data.price}
+                  </p>
+                  <p className={"text-sm text-neutral-600 whitespace-nowrap"}>
+                    {data.quantity.amount} {data.quantity.unit}
+                  </p>
+                </div>
+                {/* Stock status indicator */}
+                {typeof data.stock === "number" && (
+                  <p
+                    className={`text-xs font-semibold ${
+                      data.stock === 0
+                        ? "text-red-600"
+                        : data.stock <= 10
+                          ? "text-amber-600"
+                          : "text-green-700"
+                    }`}
+                  >
+                    {data.stock === 0
+                      ? "Out of Stock"
+                      : data.stock <= 10
+                        ? `⚠ Only ${data.stock} left in stock`
+                        : `✓ In Stock (${data.stock} units available)`}
+                  </p>
+                )}
               </div>
               <p className={"text-sm font-medium sm:mt-2"}>
                 {data.refundPolicy === "no-refunds"
@@ -132,7 +153,7 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
 
             <div className={"px-6 py-4 border-b"}>
               <div className={"flex flex-col sm:flex-row gap-3"}>
-                <CartButton tenantSlug={subdomain} productId={productId} />
+                <CartButton tenantSlug={subdomain} productId={productId} stock={data.stock} />
                 <Button
                   variant={"secondary"}
                   onClick={() => {
@@ -189,6 +210,9 @@ const ProductView = ({ productId, subdomain }: ProductViewProps) => {
                   </Fragment>
                 ))}
               </div>
+              
+              {/* Product Reviews List */}
+              <ProductReviewList productId={productId} />
             </div>
           </div>
         </div>

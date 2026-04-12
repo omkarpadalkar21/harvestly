@@ -8,16 +8,19 @@ import { QuantitySelector } from "./quantity-selector";
 interface Props {
   tenantSlug: string;
   productId: string;
+  stock?: number | null;
 }
 
-export const CartButton = ({ tenantSlug, productId }: Props) => {
+export const CartButton = ({ tenantSlug, productId, stock }: Props) => {
   const cart = useCart(tenantSlug);
   const isInCart = cart.isProductInCart(productId);
   const cartQuantity = cart.getProductQuantity(productId);
   const [quantity, setQuantity] = useState(cartQuantity || 1);
 
+  const isOutOfStock = typeof stock === "number" && stock === 0;
+
   const handleAddToCart = () => {
-    if (!isInCart) {
+    if (!isInCart && !isOutOfStock) {
       cart.addProduct(productId, quantity);
     }
   };
@@ -34,11 +37,24 @@ export const CartButton = ({ tenantSlug, productId }: Props) => {
     setQuantity(1);
   };
 
+  if (isOutOfStock) {
+    return (
+      <Button
+        variant="outline"
+        disabled
+        className="flex-1 py-3 border-black cursor-not-allowed text-muted-foreground"
+      >
+        Out of Stock
+      </Button>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2 w-full">
       <QuantitySelector
         onQuantityChange={handleQuantityChange}
         initialQuantity={isInCart ? cartQuantity : quantity}
+        max={typeof stock === "number" ? stock : undefined}
       />
       {!isInCart ? (
         <Button

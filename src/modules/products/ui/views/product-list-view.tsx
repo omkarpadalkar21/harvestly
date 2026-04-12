@@ -2,9 +2,9 @@ import ProductSort from "@/modules/products/ui/components/product-sort";
 import ProductFilters from "@/modules/products/ui/components/product-filters";
 import { Suspense } from "react";
 import {
-  ProductList,
-  ProductListLoading,
-} from "@/modules/products/ui/components/product-list";
+  LocationAwareProductList,
+  LocationAwareProductListLoading,
+} from "@/modules/home/ui/components/location-aware-product-list";
 
 interface Props {
   category?: string;
@@ -38,8 +38,8 @@ const ProductListView = ({ category, subcategory, tenantSubdomain }: Props) => {
           </div>
         </div>
         <div className={"lg:col-span-4 xl:col-span-6"}>
-          <Suspense fallback={<ProductListLoading />}>
-            <ProductList
+          <Suspense fallback={<LocationAwareProductListLoading />}>
+            <LocationAwareProductList
               category={category}
               subcategory={subcategory}
               tenantSubdomain={tenantSubdomain}

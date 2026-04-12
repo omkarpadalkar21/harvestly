@@ -160,6 +160,17 @@ export const Products: CollectionConfig = {
       options: ["30-day", "14-day", "7-day", "3-day", "1-day", "no-refunds"],
     },
     {
+      name: "stock",
+      type: "number",
+      required: true,
+      min: 0,
+      defaultValue: 0,
+      admin: {
+        description:
+          "Available units for sale. This decrements automatically on purchase.",
+      },
+    },
+    {
       name: "isArchived",
       label: "Archive",
       defaultValue: false,

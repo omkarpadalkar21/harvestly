@@ -75,6 +75,8 @@ export interface Config {
     tenants: Tenant;
     orders: Order;
     reviews: Review;
+    carts: Cart;
+    'refund-requests': RefundRequest;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -93,6 +95,8 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
+    'refund-requests': RefundRequestsSelect<false> | RefundRequestsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -143,6 +147,19 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  location?: {
+    city?: string | null;
+    state?: string | null;
+    pincode?: string | null;
+    /**
+     * Latitude coordinate
+     */
+    lat?: number | null;
+    /**
+     * Longitude coordinate
+     */
+    lng?: number | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -168,11 +185,11 @@ export interface User {
 export interface Tenant {
   id: string;
   /**
-   * This is the name of the store (e.g. Farm Fresh Stores)
+   * This is the name of the store e.g. Farm Fresh Stores
    */
   name: string;
   /**
-   * This is the subdomain for the store (e.g. [subdomain].harvestly.com
+   * This is the subdomain for the store e.g. subdomain.harvestly.com
    */
   subdomain: string;
   image?: (string | null) | Media;
@@ -184,6 +201,27 @@ export interface Tenant {
    * You cannot create products until you submit your Stripe details
    */
   stripeDetailsSubmitted?: boolean | null;
+  location: {
+    address?: string | null;
+    city: string;
+    state: string;
+    /**
+     * Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled.
+     */
+    pincode: string;
+    /**
+     * Latitude — auto-filled from pincode. Do not edit manually.
+     */
+    lat?: number | null;
+    /**
+     * Longitude — auto-filled from pincode. Do not edit manually.
+     */
+    lng?: number | null;
+    /**
+     * Maximum delivery radius in kilometres (default 50 km)
+     */
+    serviceRadiusKm?: number | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -273,6 +311,10 @@ export interface Product {
   perishability: 'high' | 'medium' | 'low' | 'none';
   refundPolicy?: ('30-day' | '14-day' | '7-day' | '3-day' | '1-day' | 'no-refunds') | null;
   /**
+   * Available units for sale. This decrements automatically on purchase.
+   */
+  stock: number;
+  /**
    * If checked, this product will be archived
    */
   isArchived?: boolean | null;
@@ -311,6 +353,24 @@ export interface Order {
    * Stripe account associated with the order
    */
   stripeAccountId?: string | null;
+  /**
+   * Groups all order items from the same checkout session.
+   */
+  cartSessionId?: string | null;
+  /**
+   * Quantity of the product purchased in this order line.
+   */
+  quantity?: number | null;
+  status: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'delivered' | 'cancelled' | 'refunded';
+  deliveryAddress: {
+    fullName: string;
+    phone: string;
+    addressLine1: string;
+    addressLine2?: string | null;
+    city: string;
+    state: string;
+    pincode: string;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -324,6 +384,43 @@ export interface Review {
   rating: number;
   product: string | Product;
   user: string | User;
+  /**
+   * Auto-set to true if buyer has a completed order for this product.
+   */
+  verifiedPurchase?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  user: string | User;
+  tenantSubdomain: string;
+  items?:
+    | {
+        product: string | Product;
+        quantity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refund-requests".
+ */
+export interface RefundRequest {
+  id: string;
+  order: string | Order;
+  user: string | User;
+  reason: string;
+  status?: ('pending' | 'approved' | 'rejected' | 'processed') | null;
+  sellerNote?: string | null;
+  stripeRefundId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -365,6 +462,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: string | Review;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: string | Cart;
+      } | null)
+    | ({
+        relationTo: 'refund-requests';
+        value: string | RefundRequest;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -420,6 +525,15 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         tenant?: T;
         id?: T;
+      };
+  location?:
+    | T
+    | {
+        city?: T;
+        state?: T;
+        pincode?: T;
+        lat?: T;
+        lng?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -490,6 +604,7 @@ export interface ProductsSelect<T extends boolean = true> {
   image?: T;
   perishability?: T;
   refundPolicy?: T;
+  stock?: T;
   isArchived?: T;
   isPrivate?: T;
   updatedAt?: T;
@@ -515,6 +630,17 @@ export interface TenantsSelect<T extends boolean = true> {
   image?: T;
   stripeAccountId?: T;
   stripeDetailsSubmitted?: T;
+  location?:
+    | T
+    | {
+        address?: T;
+        city?: T;
+        state?: T;
+        pincode?: T;
+        lat?: T;
+        lng?: T;
+        serviceRadiusKm?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -528,6 +654,20 @@ export interface OrdersSelect<T extends boolean = true> {
   product?: T;
   stripeCheckoutSessionId?: T;
   stripeAccountId?: T;
+  cartSessionId?: T;
+  quantity?: T;
+  status?: T;
+  deliveryAddress?:
+    | T
+    | {
+        fullName?: T;
+        phone?: T;
+        addressLine1?: T;
+        addressLine2?: T;
+        city?: T;
+        state?: T;
+        pincode?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -540,6 +680,38 @@ export interface ReviewsSelect<T extends boolean = true> {
   rating?: T;
   product?: T;
   user?: T;
+  verifiedPurchase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  user?: T;
+  tenantSubdomain?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refund-requests_select".
+ */
+export interface RefundRequestsSelect<T extends boolean = true> {
+  order?: T;
+  user?: T;
+  reason?: T;
+  status?: T;
+  sellerNote?: T;
+  stripeRefundId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

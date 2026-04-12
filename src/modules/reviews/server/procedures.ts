@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
@@ -138,5 +138,14 @@ export const reviewsRouter = createTRPCRouter({
       });
 
       return updatedReview;
+    }),
+  getProductReviews: baseProcedure
+    .input(z.object({ productId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.find({
+        collection: "reviews",
+        depth: 2, // to get user details
+        where: { product: { equals: input.productId } },
+      });
     }),
 });

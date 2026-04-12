@@ -7,11 +7,13 @@ import { useState } from "react";
 interface QuantitySelectorProps {
   onQuantityChange: (quantity: number) => void;
   initialQuantity?: number;
+  max?: number;
 }
 
 export const QuantitySelector = ({
   onQuantityChange,
   initialQuantity = 1,
+  max,
 }: QuantitySelectorProps) => {
   const [quantity, setQuantity] = useState(initialQuantity);
 
@@ -24,6 +26,7 @@ export const QuantitySelector = ({
   };
 
   const handleIncrease = () => {
+    if (max !== undefined && quantity >= max) return;
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
     onQuantityChange(newQuantity);
@@ -46,6 +49,7 @@ export const QuantitySelector = ({
         size="sm"
         onClick={handleIncrease}
         className="h-full rounded-none border-l hover:bg-gray-100 px-3"
+        disabled={max !== undefined && quantity >= max}
       >
         <PlusIcon className="size-4" />
       </Button>

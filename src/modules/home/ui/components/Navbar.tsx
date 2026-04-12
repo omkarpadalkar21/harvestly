@@ -84,12 +84,13 @@ const Navbar = () => {
       },
     })
   );
-  const filteredNavbarItems = navbarItems.filter((item) => {
-    if (item.href === "/orders") {
-      return session.data?.user?.roles?.includes("customer");
-    }
-    return true;
-  });
+  let filteredNavbarItems = [...navbarItems];
+  if (!session.data?.user?.roles?.includes("customer")) {
+    filteredNavbarItems = filteredNavbarItems.filter(item => item.href !== "/orders");
+  }
+  if (session.data?.user?.roles?.includes("seller")) {
+    filteredNavbarItems.push({ href: "/seller/orders", children: "Seller Dashboard" });
+  }
 
   return (
     <nav className="flex h-20 border-b border-black justify-between font-medium bg-white">

@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useCartStore } from "@/modules/checkout/store/use-cart-store";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,12 +33,26 @@ const SignInView = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const syncCart = useMutation(trpc.cart.syncCart.mutationOptions());
   const login = useMutation(
     trpc.auth.login.mutationOptions({
       onError: (error) => {
         toast.error(error.message);
       },
       onSuccess: async () => {
+        const state = useCartStore.getState();
+        for (const [tenantSlug, cart] of Object.entries(state.tenantCarts)) {
+          if (cart.productIds.length > 0) {
+            try {
+              await syncCart.mutateAsync({
+                tenantSubdomain: tenantSlug,
+                items: cart.productIds as {id: string, quantity: number}[],
+              });
+            } catch (err) {
+              console.error("Cart sync error", err);
+            }
+          }
+        }
         await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
         router.push("/");
       },

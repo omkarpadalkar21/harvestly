@@ -3,9 +3,9 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import {
-  ProductCard,
-  ProductCardSkeleton,
-} from "@/modules/orders/ui/components/product-card";
+  OrderSessionCard,
+  OrderSessionCardSkeleton,
+} from "@/modules/orders/ui/components/order-session-card";
 import { DEFAULT_LIMIT } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { InboxIcon } from "lucide-react";
@@ -15,61 +15,44 @@ export const ProductList = () => {
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery(
       trpc.orders.getMany.infiniteQueryOptions(
+        { limit: DEFAULT_LIMIT },
         {
-          limit: DEFAULT_LIMIT,
-        },
-        {
-          getNextPageParam: (lastPage) => {
-            return lastPage.docs.length > 0 ? lastPage.nextPage : undefined;
-          },
-        },
-      ),
+          getNextPageParam: (lastPage) =>
+            lastPage.hasNextPage ? lastPage.nextPage : undefined,
+        }
+      )
     );
 
-  if (data.pages?.[0]?.docs.length === 0) {
+  const allSessions = data.pages.flatMap((page) => page.docs);
+
+  if (allSessions.length === 0) {
     return (
-      <div
-        className={
-          "border border-black border-dashed flex items-center justify-center p-8 flex-col gap-y-4 bg-white w-full rounded-lg"
-        }
-      >
+      <div className="border border-black border-dashed flex items-center justify-center p-8 flex-col gap-y-4 bg-white w-full rounded-lg">
         <InboxIcon />
-        <p className={"text-base font-medium"}>No products found!</p>
+        <p className="text-base font-medium">No orders yet!</p>
+        <p className="text-sm text-muted-foreground">
+          Your completed orders will appear here.
+        </p>
       </div>
     );
   }
+
   return (
     <>
-      <div
-        className={
-          "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-        }
-      >
-        {data?.pages
-          .flatMap((page) => page.docs)
-          .map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              imageUrl={product.image?.url}
-              tenantSubdomain={product.tenant.subdomain}
-              tenantImageUrl={product.tenant.image?.url}
-              reviewRating={product.reviewRating}
-              reviewCount={product.reviewCount}
-              quantity={product.quantity}
-            />
-          ))}
+      <div className="flex flex-col gap-4">
+        {allSessions.map((session) => (
+          <OrderSessionCard key={session.cartSessionId} session={session} />
+        ))}
       </div>
-      <div className={"flex justify-center pt-8"}>
+      <div className="flex justify-center pt-8">
         {hasNextPage && (
           <Button
             disabled={isFetchingNextPage}
             onClick={() => fetchNextPage()}
-            className={"font-medium disabled:opacity-50 text-base bg-white"}
-            variant={"secondary"}
+            className="font-medium disabled:opacity-50 text-base bg-white"
+            variant="secondary"
           >
-            Load more
+            Load more orders
           </Button>
         )}
       </div>
@@ -79,13 +62,9 @@ export const ProductList = () => {
 
 export const ProductListLoading = () => {
   return (
-    <div
-      className={
-        "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-      }
-    >
-      {Array.from({ length: DEFAULT_LIMIT }).map((_, index) => (
-        <ProductCardSkeleton key={index} />
+    <div className="flex flex-col gap-4">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <OrderSessionCardSkeleton key={index} />
       ))}
     </div>
   );
