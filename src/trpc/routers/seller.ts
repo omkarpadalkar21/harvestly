@@ -16,7 +16,7 @@ export const sellerRouter = createTRPCRouter({
           "delivered",
           "cancelled",
         ]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Fetch the order with depth:2 to get product and its tenant
@@ -31,9 +31,10 @@ export const sellerRouter = createTRPCRouter({
       }
 
       // Determine all tenant IDs the calling seller belongs to
-      const sellerTenantIds = ctx.session.user.tenants?.map((t) =>
-        typeof t.tenant === "string" ? t.tenant : t.tenant?.id
-      ) ?? [];
+      const sellerTenantIds =
+        ctx.session.user.tenants?.map((t) =>
+          typeof t.tenant === "string" ? t.tenant : t.tenant?.id,
+        ) ?? [];
 
       // Order's product tenant
       const orderTenantId =
@@ -61,47 +62,64 @@ export const sellerRouter = createTRPCRouter({
       // Notify customer of status change
       const customer = order.user as User;
       if (customer?.email) {
-        sendOrderStatusUpdateToCustomer(updatedOrder, customer.email, input.status).catch(console.error);
+        sendOrderStatusUpdateToCustomer(
+          updatedOrder,
+          customer.email,
+          input.status,
+        ).catch(console.error);
       }
 
       return updatedOrder;
     }),
   getSellerOrders: sellerProcedure
-    .input(z.object({ limit: z.number().default(20), page: z.number().default(1) }))
+    .input(
+      z.object({ limit: z.number().default(20), page: z.number().default(1) }),
+    )
     .query(async ({ ctx, input }) => {
-      const tenantIds = ctx.session.user.tenants?.map(t =>
-        typeof t.tenant === 'string' ? t.tenant : t.tenant?.id
-      ) ?? [];
-      
+      const tenantIds =
+        ctx.session.user.tenants?.map((t) =>
+          typeof t.tenant === "string" ? t.tenant : t.tenant?.id,
+        ) ?? [];
+
       const products = await ctx.db.find({
-        collection: 'products',
+        collection: "products",
         where: { tenant: { in: tenantIds } },
         limit: 1000,
         pagination: false,
       });
-      
-      const productIds = products.docs.map(p => p.id);
-      
+
+      const productIds = products.docs.map((p) => p.id);
+
       // If the seller has no products, return empty immediately
       if (!productIds.length) {
-        return { docs: [], totalDocs: 0, hasNextPage: false, totalPages: 0, page: 1, limit: input.limit, pagingCounter: 1 };
+        return {
+          docs: [],
+          totalDocs: 0,
+          hasNextPage: false,
+          totalPages: 0,
+          page: 1,
+          limit: input.limit,
+          pagingCounter: 1,
+        };
       }
 
       return ctx.db.find({
-        collection: 'orders',
+        collection: "orders",
         depth: 2,
         limit: input.limit,
         page: input.page,
-        sort: '-createdAt',
+        sort: "-createdAt",
         where: { product: { in: productIds } },
       });
     }),
   processRefund: sellerProcedure
-    .input(z.object({
-      requestId: z.string(),
-      status: z.enum(['approved', 'rejected', 'processed']),
-      sellerNote: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        requestId: z.string(),
+        status: z.enum(["approved", "rejected", "processed"]),
+        sellerNote: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const refundRequest = await ctx.db.findByID({
         collection: "refund-requests",
@@ -110,7 +128,10 @@ export const sellerRouter = createTRPCRouter({
       });
 
       if (!refundRequest) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Refund request not found." });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Refund request not found.",
+        });
       }
 
       // Optionally, verify this order belongs to the seller
@@ -127,7 +148,10 @@ export const sellerRouter = createTRPCRouter({
 
       // Update the order status to refunded if approved
       if (input.status === "approved" || input.status === "processed") {
-        const orderId = typeof refundRequest.order === "string" ? refundRequest.order : refundRequest.order.id;
+        const orderId =
+          typeof refundRequest.order === "string"
+            ? refundRequest.order
+            : refundRequest.order.id;
         await ctx.db.update({
           collection: "orders",
           id: orderId,

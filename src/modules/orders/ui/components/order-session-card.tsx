@@ -6,21 +6,12 @@ import { StatusBadge } from "@/modules/orders/ui/components/status-badge";
 import { MapPinIcon, PackageIcon, StarIcon } from "lucide-react";
 import type { OrderSession } from "@/modules/orders/server/procedures";
 
-/** Native "X ago" formatter — no external dependency */
-function timeAgo(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  if (diffSec < 60) return rtf.format(-diffSec, "second");
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return rtf.format(-diffMin, "minute");
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return rtf.format(-diffHr, "hour");
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 30) return rtf.format(-diffDay, "day");
-  const diffMo = Math.floor(diffDay / 30);
-  if (diffMo < 12) return rtf.format(-diffMo, "month");
-  return rtf.format(-Math.floor(diffMo / 12), "year");
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 interface OrderSessionCardProps {
@@ -28,7 +19,7 @@ interface OrderSessionCardProps {
 }
 
 export const OrderSessionCard = ({ session }: OrderSessionCardProps) => {
-  const ago = timeAgo(session.createdAt);
+  const formattedDate = formatDate(session.createdAt);
 
   return (
     <div className="border border-black rounded-lg bg-white overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -39,9 +30,7 @@ export const OrderSessionCard = ({ session }: OrderSessionCardProps) => {
           <span className="text-xs font-mono text-neutral-500 truncate max-w-[180px] sm:max-w-xs">
             #{session.cartSessionId.slice(-12).toUpperCase()}
           </span>
-          <span className="text-xs text-neutral-400 hidden sm:inline shrink-0">
-            · {ago}
-          </span>
+            · {formattedDate}
         </div>
         <StatusBadge status={session.status} />
       </div>

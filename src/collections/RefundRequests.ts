@@ -5,10 +5,11 @@ export const RefundRequests: CollectionConfig = {
   slug: 'refund-requests',
   admin: {
     useAsTitle: 'reason',
+    hidden: ({ user }) => !isSuperAdmin(user),
   },
   access: {
+    create: ({ req }) => isSuperAdmin(req.user), // customers submit via app UI only
     read: ({ req }) => !!req.user,
-    create: ({ req }) => !!req.user,
     update: ({ req }) => isSellerOrSuperAdmin(req.user),
     delete: ({ req }) => isSuperAdmin(req.user),
   },

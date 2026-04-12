@@ -362,15 +362,18 @@ export interface Order {
    */
   quantity?: number | null;
   status: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'delivered' | 'cancelled' | 'refunded';
-  deliveryAddress: {
-    fullName: string;
-    phone: string;
-    addressLine1: string;
-    addressLine2?: string | null;
-    city: string;
-    state: string;
-    pincode: string;
-  };
+  /**
+   * Auto-calculated when the seller accepts the order. Can be manually adjusted.
+   */
+  estimatedDeliveryDate?: string | null;
+  /**
+   * Timestamp auto-set when seller accepts the order.
+   */
+  acceptedAt?: string | null;
+  /**
+   * Required when cancelling an order. Visible to the customer in the app.
+   */
+  cancelReason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -657,17 +660,9 @@ export interface OrdersSelect<T extends boolean = true> {
   cartSessionId?: T;
   quantity?: T;
   status?: T;
-  deliveryAddress?:
-    | T
-    | {
-        fullName?: T;
-        phone?: T;
-        addressLine1?: T;
-        addressLine2?: T;
-        city?: T;
-        state?: T;
-        pincode?: T;
-      };
+  estimatedDeliveryDate?: T;
+  acceptedAt?: T;
+  cancelReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }

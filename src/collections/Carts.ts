@@ -1,7 +1,11 @@
 import type { CollectionConfig } from "payload";
+import { isSuperAdmin } from "@/lib/access";
 
 export const Carts: CollectionConfig = {
   slug: "carts",
+  admin: {
+    hidden: ({ user }) => !isSuperAdmin(user),
+  },
   // FIX (Bug 5): Previously, access was `!!req.user` for all operations,
   // meaning ANY authenticated user could read or mutate ANY other user's cart.
   // Access is now constrained to the cart owner for all operations, with

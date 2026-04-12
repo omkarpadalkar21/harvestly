@@ -77,3 +77,24 @@ export async function sendOrderStatusUpdateToCustomer(order: any, customerEmail:
     console.error("Failed to send status update email to customer", error);
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function sendOrderAcceptedToCustomer(order: any, customerEmail: string, etaFormatted: string) {
+  try {
+    await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: customerEmail,
+      subject: `Your order has been accepted! – #${String(order.id).slice(-8).toUpperCase()}`,
+      html: `
+        <h1>Great news — your order is confirmed!</h1>
+        <p>Your order for <strong>${order.quantity ?? 1}x ${order.name}</strong> has been accepted by the seller.</p>
+        <h3>Estimated Delivery</h3>
+        <p><strong>${etaFormatted}</strong></p>
+        <p>You'll receive another update when your order is dispatched.</p>
+      `,
+    });
+    console.log(`Acceptance email sent to ${customerEmail} for order ${order.id}`);
+  } catch (e) {
+    console.error('Failed to send order acceptance email:', e);
+  }
+}
