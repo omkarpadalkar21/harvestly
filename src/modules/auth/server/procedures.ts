@@ -5,6 +5,7 @@ import { z } from "zod";
 import { loginSchema, registerSellerSchema, registerCustomerSchema } from "@/modules/auth/schemas";
 import { generateAuthCookie, clearAuthCookie } from "@/modules/auth/utils";
 import { stripe } from "@/lib/stripe";
+import { geocodePincodeServer } from "@/lib/geo";
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
@@ -30,6 +31,8 @@ export const authRouter = createTRPCRouter({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Failed to create Stripe account" });
       }
 
+      const geo = await geocodePincodeServer(input.pincode);
+
       // FIX (Bug 9): lat and lng are now `null` (not 0).
       // Previously lat: 0, lng: 0 was used as a placeholder. That is a real
       // coordinate (Gulf of Guinea, 0°N 0°E), and since 0 is falsy in JS it also
@@ -43,11 +46,11 @@ export const authRouter = createTRPCRouter({
           subdomain: input.username,
           stripeAccountId: account.id,
           location: {
-            city: "Unknown",
-            state: "Unknown",
-            pincode: "000000",
-            lat: null,
-            lng: null,
+            city: geo?.city ?? "Unknown",
+            state: geo?.state ?? "Unknown",
+            pincode: input.pincode,
+            lat: geo?.lat ?? null,
+            lng: geo?.lng ?? null,
             serviceRadiusKm: 50,
           },
         },

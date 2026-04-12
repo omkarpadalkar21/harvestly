@@ -206,7 +206,7 @@ export interface Tenant {
     city: string;
     state: string;
     /**
-     * Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled.
+     * Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled on save.
      */
     pincode: string;
     /**

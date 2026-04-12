@@ -17,38 +17,42 @@ export const Tenants: CollectionConfig = {
   },
   // ─── HOOKS ────────────────────────────────────────────────────────────────
   hooks: {
-    /**
-     * FIX (Bug 2 & 9): Auto-geocode lat/lng from pincode whenever the
-     * location block changes (including updates from the Payload admin panel).
-     * Previously there was NO hook, so sellers updating city/state from the
-     * dashboard never had their coordinates updated.
-     */
     beforeChange: [
       async ({ data, originalDoc }) => {
         const newPincode = data?.location?.pincode;
         const oldPincode = originalDoc?.location?.pincode;
 
-        // Only geocode when the pincode field is actually present in the
-        // incoming data AND has changed (or is being set for the first time).
-        const pincodeChanged =
-          newPincode &&
-          /^\d{6}$/.test(newPincode) &&
-          newPincode !== oldPincode;
+        // FIX: Geocode when:
+        //   (a) a valid 6-digit pincode is present in the incoming data, AND
+        //   (b) EITHER the pincode has changed OR lat/lng are currently null.
+        //
+        // Previously the condition only checked newPincode !== oldPincode, so
+        // sellers who already had the correct pincode saved but still had
+        // lat: null (e.g. from a failed geocode on first save) were never
+        // re-geocoded — the hook silently skipped them every time.
+        const hasValidPincode = newPincode && /^\d{6}$/.test(newPincode);
+        const pincodeChanged = newPincode !== oldPincode;
+        const coordsMissing =
+          originalDoc?.location?.lat == null ||
+          originalDoc?.location?.lng == null;
 
-        if (pincodeChanged) {
+        const shouldGeocode =
+          hasValidPincode && (pincodeChanged || coordsMissing);
+
+        if (shouldGeocode) {
           const geo = await geocodePincodeServer(newPincode);
           if (geo) {
             data.location = {
               ...data.location,
               lat: geo.lat,
               lng: geo.lng,
-              // If the admin left city/state blank, backfill from geocoder
+              // Backfill city/state from geocoder if admin left them blank
               city: data.location?.city || geo.city,
               state: data.location?.state || geo.state,
             };
           } else {
-            // Geocoding failed — explicitly null out stale coords so the
-            // falsy-zero bug (Bug 1) does not accidentally re-surface.
+            // Geocoding failed — null out coords so the filter hides this
+            // seller rather than showing them to everyone.
             data.location = {
               ...data.location,
               lat: null,
@@ -61,11 +65,6 @@ export const Tenants: CollectionConfig = {
       },
     ],
 
-    /**
-     * FIX (Bug 3): Invalidate the in-memory LRU tenant cache whenever a
-     * tenant document changes so the geo-filter always uses fresh coordinates.
-     * Previously invalidateTenantCache() existed but was never called.
-     */
     afterChange: [
       ({ doc }) => {
         invalidateTenantCache(doc.subdomain as string);
@@ -153,28 +152,35 @@ export const Tenants: CollectionConfig = {
           defaultValue: "000000",
           admin: {
             description:
-              "Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled.",
+              "Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled on save.",
           },
         },
         {
           name: "lat",
           type: "number",
-          // FIX (Bug 9): Default is null, NOT 0. Zero is a real coordinate
-          // (Gulf of Guinea) and is falsy in JavaScript, which previously caused
-          // all newly-registered sellers to bypass geo-filtering entirely.
-          defaultValue: null,
+          // FIX: No defaultValue — Payload stores null automatically when
+          // no value is present for a number field. Specifying `null` here
+          // causes a TypeScript error because DefaultValue only accepts
+          // number | (() => number) | undefined.
+          // FIX: Do NOT use readOnly here. Payload's readOnly flag prevents
+          // the field from being written via the API, which means the
+          // beforeChange hook's lat/lng mutations are silently discarded
+          // before they reach the database. We hide the field in the UI
+          // using admin.hidden instead — it stays writable server-side.
           admin: {
-            description: "Latitude — auto-filled from pincode. Do not edit manually.",
-            readOnly: true,
+            description:
+              "Latitude — auto-filled from pincode. Do not edit manually.",
+            hidden: true,
           },
         },
         {
           name: "lng",
           type: "number",
-          defaultValue: null,
+          // No defaultValue — same reason as lat above.
           admin: {
-            description: "Longitude — auto-filled from pincode. Do not edit manually.",
-            readOnly: true,
+            description:
+              "Longitude — auto-filled from pincode. Do not edit manually.",
+            hidden: true,
           },
         },
         {
@@ -184,7 +190,8 @@ export const Tenants: CollectionConfig = {
           min: 1,
           max: 500,
           admin: {
-            description: "Maximum delivery radius in kilometres (default 50 km)",
+            description:
+              "Maximum delivery radius in kilometres (default 50 km)",
           },
         },
       ],

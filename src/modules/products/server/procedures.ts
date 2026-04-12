@@ -106,8 +106,6 @@ export const productsRouter = createTRPCRouter({
         sort: z.enum(sortValues).nullable().optional(),
         tenantSubdomain: z.string().nullable().optional(),
         inStockOnly: z.boolean().optional().default(false),
-        customerLat: z.number().nullable().optional(),
-        customerLng: z.number().nullable().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -167,16 +165,7 @@ export const productsRouter = createTRPCRouter({
       if (input.search) where["name"] = { like: input.search };
       if (input.tags?.length) where["tags"] = { in: input.tags };
 
-      const hasGeo =
-        typeof input.customerLat === "number" &&
-        typeof input.customerLng === "number";
-
-      // Over-fetch to compensate for JS geo-filtering reducing result count.
-      const GEO_FETCH_MULTIPLIER = 3;
-      const fetchLimit =
-        hasGeo && !input.tenantSubdomain
-          ? input.limit * GEO_FETCH_MULTIPLIER
-          : input.limit;
+      const fetchLimit = input.limit;
 
       const data = await ctx.db.find({
         collection: "products",
@@ -225,54 +214,12 @@ export const productsRouter = createTRPCRouter({
         });
       }
 
-      // ── GEO-FILTER ──────────────────────────────────────────────────────────
-      let geoDocs = orderedDocs;
-      if (hasGeo && !input.tenantSubdomain) {
-        geoDocs = orderedDocs.filter((doc) => {
-          const tenant = doc.tenant as Tenant & {
-            location?: {
-              lat?: number | null;
-              lng?: number | null;
-              serviceRadiusKm?: number | null;
-            };
-          };
-          const loc = tenant?.location;
-
-          // null/undefined coords → seller not yet geocoded → SHOW them.
-          // Never hide a seller just because geocoding hasn't run yet.
-          if (loc?.lat == null || loc?.lng == null) return true;
-
-          const radius = loc.serviceRadiusKm ?? 50;
-          return (
-            haversineKm(
-              loc.lat,
-              loc.lng,
-              input.customerLat!,
-              input.customerLng!,
-            ) <= radius
-          );
-        });
-
-        // Trim back to the requested page size after geo-filtering.
-        geoDocs = geoDocs.slice(0, input.limit);
-      }
-
-      const outOfRange =
-        hasGeo &&
-        !input.tenantSubdomain &&
-        geoDocs.length === 0 &&
-        orderedDocs.length > 0;
-
       // ── PAGINATION CURSOR ────────────────────────────────────────────────────
-      // tRPC's infiniteQueryOptions picks up `nextPage` from the return value
-      // automatically as the next cursor — no client-side getNextPageParam needed.
-      // Gate on Payload's hasNextPage (real DB cursor), NOT geoDocs.length,
-      // because a geo-filtered page can return 0 docs while more DB pages exist.
       const hasNextPage = data.hasNextPage;
       const nextPage = hasNextPage ? input.cursor + 1 : null;
 
       return {
-        docs: geoDocs.map((doc) => ({
+        docs: orderedDocs.map((doc) => ({
           ...doc,
           image: doc.image as Media | null,
           tenant: doc.tenant as Tenant & { image: Media | null },
@@ -281,7 +228,6 @@ export const productsRouter = createTRPCRouter({
         nextPage,
         totalDocs: data.totalDocs,
         limit: input.limit,
-        outOfRange,
       };
     }),
 });

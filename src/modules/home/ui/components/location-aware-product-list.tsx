@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useTRPC } from "@/trpc/client";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import {
+  useSuspenseInfiniteQuery,
+  type QueryFunction,
+} from "@tanstack/react-query";
 import { useProductFilters } from "@/modules/hooks/use-product-filters";
 import {
   ProductCard,
@@ -11,10 +13,6 @@ import {
 import { DEFAULT_LIMIT } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { InboxIcon } from "lucide-react";
-import { useLocationStore } from "@/modules/home/store/use-location-store";
-import { LocationPrompt } from "@/modules/home/ui/components/location-prompt";
-import { LocationBar } from "@/modules/home/ui/components/location-bar";
-import { OutOfRangeBanner } from "@/modules/home/ui/components/out-of-range-banner";
 
 interface Props {
   category?: string;
@@ -29,18 +27,6 @@ export const LocationAwareProductList = ({
 }: Props) => {
   const [filters] = useProductFilters();
   const trpc = useTRPC();
-  const { location, hasPrompted, setHasPrompted } = useLocationStore();
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  useEffect(() => {
-    if (!hasPrompted && !tenantSubdomain) {
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-        setHasPrompted();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [hasPrompted, tenantSubdomain, setHasPrompted]);
 
   const queryOptions = trpc.products.getMany.infiniteQueryOptions({
     search: filters.search,
@@ -52,29 +38,18 @@ export const LocationAwareProductList = ({
     subcategory,
     tenantSubdomain,
     limit: DEFAULT_LIMIT,
-    customerLat: location?.lat ?? null,
-    customerLng: location?.lng ?? null,
   });
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
       ...queryOptions,
-      getNextPageParam: (lastPage) =>
-        lastPage.hasNextPage ? lastPage.nextPage : undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      queryFn: queryOptions.queryFn as unknown as QueryFunction<any, any, number | null>,
+      getNextPageParam: (lastPage) => {
+        const page = lastPage as { hasNextPage?: boolean; nextPage?: number | null };
+        return page.hasNextPage ? page.nextPage : undefined;
+      },
     });
-
-  const firstPage = data.pages[0];
-  const isOutOfRange =
-    (firstPage as { outOfRange?: boolean })?.outOfRange === true;
-
-  if (isOutOfRange) {
-    return (
-      <>
-        {showPrompt && <LocationPrompt onClose={() => setShowPrompt(false)} />}
-        <OutOfRangeBanner onChangeLocation={() => setShowPrompt(true)} />
-      </>
-    );
-  }
 
   if (data.pages?.[0]?.docs.length === 0) {
     return (
@@ -87,17 +62,6 @@ export const LocationAwareProductList = ({
 
   return (
     <>
-      {showPrompt && <LocationPrompt onClose={() => setShowPrompt(false)} />}
-
-      {location && !tenantSubdomain && (
-        <div className="mb-3 flex items-center justify-between">
-          <LocationBar onRequestChange={() => setShowPrompt(true)} />
-          <span className="text-xs text-neutral-400">
-            Showing sellers near you
-          </span>
-        </div>
-      )}
-
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 md:gap-4">
         {data.pages
           .flatMap((page) => page.docs)
