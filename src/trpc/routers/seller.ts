@@ -1,20 +1,20 @@
 import { createTRPCRouter, sellerProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Product, User } from "@/payload-types";
-import { sendOrderStatusUpdateToCustomer } from "@/lib/email";
-
+import { Product } from "@/payload-types";
 export const sellerRouter = createTRPCRouter({
   updateOrderStatus: sellerProcedure
     .input(
       z.object({
         orderId: z.string(),
         status: z.enum([
+          "pending",
           "confirmed",
           "processing",
           "dispatched",
           "delivered",
           "cancelled",
+          "refunded",
         ]),
       }),
     )
@@ -58,16 +58,6 @@ export const sellerRouter = createTRPCRouter({
         id: input.orderId,
         data: { status: input.status },
       });
-
-      // Notify customer of status change
-      const customer = order.user as User;
-      if (customer?.email) {
-        sendOrderStatusUpdateToCustomer(
-          updatedOrder,
-          customer.email,
-          input.status,
-        ).catch(console.error);
-      }
 
       return updatedOrder;
     }),

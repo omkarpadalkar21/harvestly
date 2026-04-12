@@ -141,44 +141,10 @@ export async function POST(req: Request) {
               console.error,
             );
 
-            // ─── FIX (Bug 4): Atomic stock decrement ──────────────────────────
-            // Previously: read stock → compute new value → write.
-            // Two concurrent webhooks for the same product could both read the
-            // same stock value, both subtract, and leave stock higher than it
-            // should be (oversell).
-            //
-            // Fix: Use the raw MongoDB driver's $inc operator for an atomic
-            // decrement. This is accessed through Payload's db adapter.
+            // ─── FIX (Bug 1): Remove stock decrement block from here ─────────────
+            // Stock logic is now managed centrally inside collections/Orders.ts afterChange hook
+            
             try {
-              const db = (payload.db as { connection?: { db?: () => { collection: (name: string) => { updateOne: (filter: object, update: object) => Promise<unknown> } } } }).connection?.db?.();
-              if (db) {
-                // Atomic $inc — safe against concurrent webhooks
-                await db
-                  .collection("products")
-                  .updateOne(
-                    { _id: productId },
-                    { $inc: { stock: -quantityOrdered } },
-                  );
-              } else {
-                // Fallback: read-modify-write with Math.max guard
-                // (not truly atomic but prevents negative stock)
-                const existingProduct = await payload.findByID({
-                  collection: "products",
-                  id: productId,
-                  depth: 0,
-                });
-                await payload.update({
-                  collection: "products",
-                  id: productId,
-                  data: {
-                    stock: Math.max(
-                      0,
-                      (existingProduct.stock ?? 0) - quantityOrdered,
-                    ),
-                  },
-                });
-              }
-
               // Notify seller
               const sellerQuery = await payload.find({
                 collection: "users",
@@ -192,10 +158,10 @@ export async function POST(req: Request) {
               sendNewOrderAlertToSeller(createdOrder, sellerEmail).catch(
                 console.error,
               );
-            } catch (stockError) {
+            } catch (notifyErr) {
               console.error(
-                `Failed to decrement stock for product ${productId}:`,
-                stockError,
+                `Failed to notify seller for product ${productId}:`,
+                notifyErr,
               );
             }
 

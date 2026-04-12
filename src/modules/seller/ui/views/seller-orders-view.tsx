@@ -188,10 +188,9 @@ export const SellerOrdersView = () => {
                             }
                             value={order.status || "pending"}
                             onValueChange={(val) => {
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               updateStatus.mutate({
                                 orderId: order.id,
-                                status: val as any,
+                                status: val as "pending" | "confirmed" | "processing" | "dispatched" | "delivered" | "cancelled" | "refunded",
                               });
                             }}
                           >

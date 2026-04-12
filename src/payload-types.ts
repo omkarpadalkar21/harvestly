@@ -374,6 +374,15 @@ export interface Order {
    * Required when cancelling an order. Visible to the customer in the app.
    */
   cancelReason?: string | null;
+  deliveryAddress?: {
+    fullName?: string | null;
+    phone?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    pincode?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -663,6 +672,17 @@ export interface OrdersSelect<T extends boolean = true> {
   estimatedDeliveryDate?: T;
   acceptedAt?: T;
   cancelReason?: T;
+  deliveryAddress?:
+    | T
+    | {
+        fullName?: T;
+        phone?: T;
+        addressLine1?: T;
+        addressLine2?: T;
+        city?: T;
+        state?: T;
+        pincode?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

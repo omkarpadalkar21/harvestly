@@ -5,7 +5,6 @@ import { sortValues } from "@/modules/products/search-params";
 import type { Media, Tenant } from "@/payload-types";
 import { DEFAULT_LIMIT } from "@/constants";
 import { TRPCError } from "@trpc/server";
-import { haversineKm } from "@/lib/geo";
 
 export const productsRouter = createTRPCRouter({
   getOne: baseProcedure

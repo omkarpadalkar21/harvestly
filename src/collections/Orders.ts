@@ -5,6 +5,19 @@ import {
   sendOrderAcceptedToCustomer,
 } from "@/lib/email";
 
+/** Terminal states from which no further changes are allowed (for non-super-admins). */
+const IRREVERSIBLE_STATUSES = ["cancelled", "refunded"] as const;
+
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  pending:    ['confirmed', 'cancelled'],
+  confirmed:  ['processing', 'cancelled'],
+  processing: ['dispatched', 'cancelled'],
+  dispatched: ['delivered', 'cancelled'],
+  delivered:  ['refunded'],   // post-delivery refund is allowed
+  cancelled:  [],             // terminal
+  refunded:   [],             // terminal
+};
+
 export const Orders: CollectionConfig = {
   slug: "orders",
   admin: {
@@ -23,7 +36,6 @@ export const Orders: CollectionConfig = {
     read: ({ req }) => {
       if (isSuperAdmin(req.user)) return true;
       if (!req.user) return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tenantIds = (req.user.tenants ?? [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((t: any) =>
@@ -36,7 +48,6 @@ export const Orders: CollectionConfig = {
     update: ({ req }) => {
       if (isSuperAdmin(req.user)) return true;
       if (!req.user) return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tenantIds = (req.user.tenants ?? [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((t: any) =>
@@ -49,10 +60,118 @@ export const Orders: CollectionConfig = {
     delete: ({ req }) => isSuperAdmin(req.user),
   },
   hooks: {
+    // ─────────────────────────────────────────────────────────────────────────
+    // beforeChange — enforce forward-only status transitions
+    // ─────────────────────────────────────────────────────────────────────────
+    beforeChange: [
+      async ({ data, originalDoc, operation }) => {
+        if (operation !== 'update') return data;
+        if (!originalDoc?.status || !data?.status) return data;
+
+        const prevStatus = originalDoc.status as string;
+        const newStatus = data.status as string;
+        if (prevStatus === newStatus) return data;
+
+        const allowedNext = ALLOWED_TRANSITIONS[prevStatus] ?? [];
+        if (!allowedNext.includes(newStatus)) {
+          if (allowedNext.length === 0) {
+            throw new Error(`Order status "${prevStatus}" is terminal and cannot be changed.`);
+          }
+          throw new Error(
+            `Invalid status transition: "${prevStatus}" → "${newStatus}". ` +
+            `Allowed next statuses: ${allowedNext.map(s => `"${s}"`).join(', ')}.`
+          );
+        }
+        return data;
+      },
+    ],
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // afterChange — stock management + email notifications
+    // ─────────────────────────────────────────────────────────────────────────
     afterChange: [
       async ({ doc, previousDoc, req, operation }) => {
+        const prevStatus = previousDoc?.status as string | undefined;
+        const newStatus = doc.status as string;
+
+        // ── Stock management ──────────────────────────────────────────────────
+        if (operation === "update" && prevStatus && prevStatus !== newStatus) {
+          const isFromTerminal = (
+            IRREVERSIBLE_STATUSES as readonly string[]
+          ).includes(prevStatus);
+
+          if (isFromTerminal) {
+            // Defensive log — beforeChange should have already blocked this path
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (req.payload.logger as any).warn(
+              `[Orders] Status transition attempted from terminal state "${prevStatus}" → "${newStatus}" on order ${doc.id}. Stock unchanged.`,
+            );
+          } else {
+            const productId = typeof doc.product === "string" ? doc.product : doc.product?.id;
+            const qty = doc.quantity ?? 1;
+
+            if (productId && qty > 0) {
+              // ── DECREMENT: pending → confirmed ──────────────────────────────────────────
+              const shouldDecrementStock =
+                prevStatus === 'pending' &&
+                newStatus !== 'pending' &&
+                newStatus !== 'cancelled' &&
+                newStatus !== 'refunded';
+
+              if (shouldDecrementStock) {
+                try {
+                  const product = await req.payload.findByID({ collection: 'products', id: productId, depth: 0 });
+                  const newStock = Math.max(0, (product.stock ?? 0) - qty);
+                  await req.payload.update({ collection: 'products', id: productId, data: { stock: newStock } });
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (req.payload.logger as any).info(
+                    `[Orders] Decremented stock by ${qty} for product ${productId} on order ${doc.id} (pending → ${newStatus}).`
+                  );
+                } catch (stockErr) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (req.payload.logger as any).error(
+                    `[Orders] Failed to decrement stock for product ${productId} on order ${doc.id}:`,
+                    stockErr
+                  );
+                }
+              }
+
+              // ── RESTORE: cancelled/refunded — only if stock was previously committed ─────
+              // If order is cancelled while still pending, stock was never decremented, so
+              // there is nothing to restore. Only restore if prevStatus !== 'pending'.
+              const shouldRestoreStock =
+                (newStatus === 'cancelled' || newStatus === 'refunded') &&
+                prevStatus !== 'pending';
+
+              if (shouldRestoreStock) {
+                try {
+                  const product = await req.payload.findByID({ collection: 'products', id: productId, depth: 0 });
+                  await req.payload.update({
+                    collection: 'products',
+                    id: productId,
+                    data: { stock: (product.stock ?? 0) + qty },
+                  });
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (req.payload.logger as any).info(
+                    `[Orders] Restored stock by ${qty} for product ${productId} on order ${doc.id} (status: ${newStatus}).`
+                  );
+                } catch (stockErr) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (req.payload.logger as any).error(
+                    `[Orders] Failed to restore stock for product ${productId} on order ${doc.id}:`,
+                    stockErr
+                  );
+                }
+              }
+            }
+          }
+        }
+        // ── End stock management ───────────────────────────────────────────────
+
+        // ── Email notifications ───────────────────────────────────────────────
         if (operation !== "update") return;
         if (doc.status === previousDoc?.status) return;
+
         try {
           const user = await req.payload.findByID({
             collection: "users",
@@ -60,6 +179,7 @@ export const Orders: CollectionConfig = {
             depth: 0,
           });
           if (!user?.email) return;
+
           if (doc.status === "confirmed") {
             const etaDate = doc.estimatedDeliveryDate
               ? new Date(doc.estimatedDeliveryDate)
@@ -83,6 +203,7 @@ export const Orders: CollectionConfig = {
         } catch (e) {
           console.error("afterChange email hook error:", e);
         }
+        // ── End email notifications ───────────────────────────────────────────
       },
     ],
   },
@@ -191,6 +312,20 @@ export const Orders: CollectionConfig = {
           "Required when cancelling an order. Visible to the customer in the app.",
         condition: (data) => data?.status === "cancelled",
       },
+    },
+    {
+      name: "deliveryAddress",
+      type: "group",
+      admin: { readOnly: true },
+      fields: [
+        { name: "fullName", type: "text" },
+        { name: "phone", type: "text" },
+        { name: "addressLine1", type: "text" },
+        { name: "addressLine2", type: "text" },
+        { name: "city", type: "text" },
+        { name: "state", type: "text" },
+        { name: "pincode", type: "text" },
+      ],
     },
   ],
 };
