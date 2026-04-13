@@ -107,8 +107,8 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
         pincode,
         city,
         state,
-        lat: lat ?? undefined,
-        lng: lng ?? undefined,
+        lat: lat,       // null when coords unavailable — explicit, never undefined
+        lng: lng,       // null when coords unavailable — explicit, never undefined
       });
 
       if (lat !== null && lng !== null) {

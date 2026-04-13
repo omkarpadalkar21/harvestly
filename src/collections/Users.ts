@@ -67,18 +67,35 @@ export const Users: CollectionConfig = {
       type: "group",
       label: "Preferred Location",
       fields: [
+        // ── GPS / Pincode picker (type:'ui' = correct Payload v3 approach) ────
+        {
+          name: "_locationPicker",
+          type: "ui",
+          admin: {
+            components: {
+              Field:
+                "@/components/admin/location-picker-field#LocationPickerField",
+            },
+          },
+        },
         { name: "city", type: "text" },
         { name: "state", type: "text" },
         { name: "pincode", type: "text" },
         {
           name: "lat",
           type: "number",
-          admin: { description: "Latitude coordinate" },
+          admin: {
+            description: "✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.",
+            style: { opacity: 0.5, pointerEvents: 'none' },
+          },
         },
         {
           name: "lng",
           type: "number",
-          admin: { description: "Longitude coordinate" },
+          admin: {
+            description: "✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.",
+            style: { opacity: 0.5, pointerEvents: 'none' },
+          },
         },
       ],
     },

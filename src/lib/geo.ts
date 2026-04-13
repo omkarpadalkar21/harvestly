@@ -114,3 +114,18 @@ export async function geocodePincodeServer(
     return null;
   }
 }
+
+/**
+ * Returns true when seller coordinates are valid and set.
+ * A seller with null/undefined lat or lng is considered "location not set"
+ * and is HIDDEN from geo-filtered results.
+ *
+ * CRITICAL: Use == null (covers both null and undefined).
+ * Do NOT use !lat — that treats lat=0 as missing (falsy-zero bug).
+ */
+export function sellerHasValidCoords(
+  lat: number | null | undefined,
+  lng: number | null | undefined,
+): boolean {
+  return lat != null && lng != null && !isNaN(lat) && !isNaN(lng);
+}

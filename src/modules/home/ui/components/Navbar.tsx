@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Poppins } from "next/font/google";
 import Image from "next/image";
@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import NavbarSidebar from "./NavbarSidebar";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, MapPinIcon } from "lucide-react";
 import { useTRPC } from "@/trpc/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useLocationStore } from "@/modules/home/store/use-location-store";
+import { LocationBar } from "@/modules/home/ui/components/location-bar";
+import { LocationPrompt } from "@/modules/home/ui/components/location-prompt";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -65,12 +68,26 @@ export const navbarItems = [
 const Navbar = () => {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const router = useRouter();
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const session = useQuery(trpc.auth.session.queryOptions());
-  
+
+  const { location, hasPrompted, setHasPrompted } = useLocationStore();
+
+  // Auto-prompt new visitors who haven't been asked yet
+  useEffect(() => {
+    if (!hasPrompted) {
+      const timer = setTimeout(() => {
+        setShowLocationPrompt(true);
+        setHasPrompted();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [hasPrompted, setHasPrompted]);
+
   const logout = useMutation(
     trpc.auth.logout.mutationOptions({
       onSuccess: async () => {
@@ -93,103 +110,131 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="flex h-20 border-b border-black justify-between font-medium bg-white">
-      <Link href={"/"} className=" flex items-center pl-6">
-        <span
-          className={cn(
-            "font-semibold flex gap-2 items-center",
-            poppins.className
-          )}
-        >
-          <Image
-            src={"/logo.svg"}
-            alt="Harvestly Logo"
-            width={50}
-            height={50}
-          />
-          <p className="hidden md:flex md:text-3xl lg:text-5xl">Harvestly</p>
-        </span>
-      </Link>
-
-      <NavbarSidebar
-        open={isSidebarOpen}
-        onOpenChange={setIsSidebarOpen}
-        items={filteredNavbarItems}
-        user={session.data?.user}
-        onLogout={() => logout.mutate()}
-        isLoggingOut={logout.isPending}
-      />
-      <div className="items-center hidden gap-4 lg:flex">
-        {filteredNavbarItems.map((item) => (
-          <NavbarItems
-            key={item.href}
-            {...item}
-            isActive={item.href === pathname}
-          />
-        ))}
-      </div>
-
-      {session.data?.user ? (
-        <div className="hidden lg:flex p-0">
-          {(session.data.user.roles?.includes("seller") ||
-            session.data.user.roles?.includes("super-admin")) ? (
-            <Button
-              asChild
-              className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
-            >
-              <Link href="/admin">Dashboard</Link>
-            </Button>
-          ) : (
-            <Button
-              onClick={() => logout.mutate()}
-              disabled={logout.isPending}
-              className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
-            >
-              Sign Out
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="hidden lg:flex p-0">
-          <Button
-            asChild
-            variant="secondary"
-            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
-          >
-            <Link prefetch href="/sign-in">
-              Log In
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="secondary"
-            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
-          >
-            <Link prefetch href="/sign-up-customer">
-              Sign Up
-            </Link>
-          </Button>
-          <Button
-            asChild
-            className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
-          >
-            <Link prefetch href="/sign-up-seller">
-              Sell on Harvestly
-            </Link>
-          </Button>
-        </div>
+    <>
+      {/* Location Prompt Modal */}
+      {showLocationPrompt && (
+        <LocationPrompt onClose={() => setShowLocationPrompt(false)} />
       )}
 
-      <div className="flex lg:hidden items-center justify-center p-3">
-        <Button
-          variant={"ghost"}
-          className="size-12 border-transparent bg-white"
-          onClick={() => setIsSidebarOpen(true)}
-        >
-          <MenuIcon className="size-full" />
-        </Button>
-      </div>
-    </nav>
+      <nav className="flex h-20 border-b border-black justify-between font-medium bg-white">
+        <Link href={"/"} className=" flex items-center pl-6">
+          <span
+            className={cn(
+              "font-semibold flex gap-2 items-center",
+              poppins.className
+            )}
+          >
+            <Image
+              src={"/logo.svg"}
+              alt="Harvestly Logo"
+              width={50}
+              height={50}
+            />
+            <p className="hidden md:flex md:text-3xl lg:text-5xl">Harvestly</p>
+          </span>
+        </Link>
+
+        <NavbarSidebar
+          open={isSidebarOpen}
+          onOpenChange={setIsSidebarOpen}
+          items={filteredNavbarItems}
+          user={session.data?.user}
+          onLogout={() => logout.mutate()}
+          isLoggingOut={logout.isPending}
+          onOpenLocationPrompt={() => setShowLocationPrompt(true)}
+        />
+        <div className="items-center hidden gap-4 lg:flex">
+          {filteredNavbarItems.map((item) => (
+            <NavbarItems
+              key={item.href}
+              {...item}
+              isActive={item.href === pathname}
+            />
+          ))}
+        </div>
+
+        {/* Desktop: location chip + auth buttons */}
+        <div className="hidden lg:flex items-center gap-0">
+          {/* Location chip — always visible on desktop */}
+          <div className="flex items-center px-4 border-r border-black h-full">
+            {location ? (
+              <LocationBar onRequestChange={() => setShowLocationPrompt(true)} />
+            ) : (
+              <button
+                onClick={() => setShowLocationPrompt(true)}
+                className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-black transition-colors"
+                aria-label="Set delivery location"
+              >
+                <MapPinIcon className="size-3.5 text-green-700" />
+                <span>Set location</span>
+              </button>
+            )}
+          </div>
+
+          {session.data?.user ? (
+            <div className="flex p-0 h-full">
+              {(session.data.user.roles?.includes("seller") ||
+                session.data.user.roles?.includes("super-admin")) ? (
+                <Button
+                  asChild
+                  className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
+                >
+                  <Link href="/admin">Dashboard</Link>
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => logout.mutate()}
+                  disabled={logout.isPending}
+                  className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
+                >
+                  Sign Out
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="flex p-0 h-full">
+              <Button
+                asChild
+                variant="secondary"
+                className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
+              >
+                <Link prefetch href="/sign-in">
+                  Log In
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="secondary"
+                className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none hover:bg-green-600 transition-colors text-lg"
+              >
+                <Link prefetch href="/sign-up-customer">
+                  Sign Up
+                </Link>
+              </Button>
+              <Button
+                asChild
+                className="border-l border-b-0 border-r-0 border-t-0 px-12 h-full rounded-none bg-black hover:bg-green-600 hover:text-black transition-colors text-lg"
+              >
+                <Link prefetch href="/sign-up-seller">
+                  Sell on Harvestly
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile: hamburger */}
+        <div className="flex lg:hidden items-center justify-center p-3">
+          <Button
+            variant={"ghost"}
+            className="size-12 border-transparent bg-white"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <MenuIcon className="size-full" />
+          </Button>
+        </div>
+      </nav>
+    </>
   );
 };
 

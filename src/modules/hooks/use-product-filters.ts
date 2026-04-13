@@ -3,6 +3,7 @@ import {
   parseAsArrayOf,
   parseAsString,
   parseAsStringLiteral,
+  parseAsBoolean,
 } from "nuqs";
 
 const sortValues = [
@@ -29,6 +30,9 @@ const params = {
   tags: parseAsArrayOf(parseAsString)
     .withOptions({ clearOnDefault: true })
     .withDefault([]),
+  inStockOnly: parseAsBoolean
+    .withOptions({ clearOnDefault: true })
+    .withDefault(false),
 };
 
 export const useProductFilters = () => {
