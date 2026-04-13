@@ -53,6 +53,7 @@ const SignUpSellerView = () => {
       username: "",
       password: "",
       email: "",
+      pincode: "",
     },
   });
 
@@ -151,6 +152,25 @@ const SignUpSellerView = () => {
                     />
                   </FormControl>
 
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name={"pincode"}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={"text-base"}>Store Pincode</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className={"border-black"}
+                      onChange={(e) => field.onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    We use this to show your products to nearby customers.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

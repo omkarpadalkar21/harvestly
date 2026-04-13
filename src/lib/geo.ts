@@ -38,32 +38,39 @@ export function sellerServesLocation(
 
 /**
  * Server-side pincode → (lat, lng, city, state) geocoding.
- * Uses the Indian postal API for city/state and Nominatim for coordinates.
  *
- * FIX (Bug 2 & 9): Previously only available on the client. Pulled into this
- * shared lib so Tenants.ts beforeChange hook can call it server-side when
- * a seller updates their pincode from the Payload CMS admin panel.
+ * FIX (Bug 2 & 9): Uses api.postalpincode.in as the PRIMARY coordinate source
+ * because it returns accurate Latitude/Longitude directly for Indian pincodes.
+ * Nominatim is kept only as a last-resort fallback — its Indian coverage is
+ * too poor to be relied upon.
  *
- * Returns null when the pincode is unknown or external APIs are unreachable.
+ * Returns null when the pincode is unknown or all external APIs are unreachable.
  */
-export async function geocodePincodeServer(pincode: string): Promise<{
-  lat: number;
-  lng: number;
-  city: string;
-  state: string;
-} | null> {
+export async function geocodePincodeServer(
+  pincode: string,
+): Promise<{ lat: number; lng: number; city: string; state: string } | null> {
   try {
-    // Step 1 — Indian postal API for city/state
     const postalRes = await fetch(
       `https://api.postalpincode.in/pincode/${pincode}`,
-      { next: { revalidate: 3600 } }, // cache 1h — pincodes don't change
+      { next: { revalidate: 3600 } },
     );
     if (!postalRes.ok) return null;
+
     const postalData = await postalRes.json();
     const postOffice = postalData?.[0]?.PostOffice?.[0];
     if (!postOffice) return null;
 
-    // Step 2 — Nominatim for coordinates
+    const city: string = postOffice.District ?? postOffice.Name;
+    const state: string = postOffice.State;
+
+    // Primary: lat/lng directly from postal API
+    const rawLat = postOffice.Latitude;
+    const rawLng = postOffice.Longitude;
+    if (rawLat && rawLat !== "NA" && rawLng && rawLng !== "NA") {
+      return { lat: parseFloat(rawLat), lng: parseFloat(rawLng), city, state };
+    }
+
+    // Fallback 1: Nominatim by postcode (last resort)
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?postalcode=${pincode}&countrycodes=in&format=json&limit=1`,
       {
@@ -71,17 +78,54 @@ export async function geocodePincodeServer(pincode: string): Promise<{
         next: { revalidate: 3600 },
       },
     );
-    if (!geoRes.ok) return null;
     const geoData = await geoRes.json();
-    if (!geoData?.[0]) return null;
+    if (geoData?.[0]) {
+      return {
+        lat: parseFloat(geoData[0].lat),
+        lng: parseFloat(geoData[0].lon),
+        city,
+        state,
+      };
+    }
 
-    return {
-      lat: parseFloat(geoData[0].lat),
-      lng: parseFloat(geoData[0].lon),
-      city: postOffice.District ?? postOffice.Name,
-      state: postOffice.State,
-    };
+    // Fallback 2: Nominatim by city+state name (absolute last resort)
+    if (city && state) {
+      const q = encodeURIComponent(`${city}, ${state}, India`);
+      const geoRes2 = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&countrycodes=in&format=json&limit=1`,
+        {
+          headers: { "Accept-Language": "en", "User-Agent": "Harvestly/1.0" },
+          next: { revalidate: 3600 },
+        },
+      );
+      const geoData2 = await geoRes2.json();
+      if (geoData2?.[0]) {
+        return {
+          lat: parseFloat(geoData2[0].lat),
+          lng: parseFloat(geoData2[0].lon),
+          city,
+          state,
+        };
+      }
+    }
+
+    return null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Returns true when seller coordinates are valid and set.
+ * A seller with null/undefined lat or lng is considered "location not set"
+ * and is HIDDEN from geo-filtered results.
+ *
+ * CRITICAL: Use == null (covers both null and undefined).
+ * Do NOT use !lat — that treats lat=0 as missing (falsy-zero bug).
+ */
+export function sellerHasValidCoords(
+  lat: number | null | undefined,
+  lng: number | null | undefined,
+): boolean {
+  return lat != null && lng != null && !isNaN(lat) && !isNaN(lng);
 }

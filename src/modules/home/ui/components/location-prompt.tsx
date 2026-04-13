@@ -24,8 +24,9 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
     setIsLoading(true);
     try {
       // ── Step 1: Postal Pincode API ─────────────────────────────────────────
-      // This is fast, reliable, and already returns Latitude/Longitude per post
-      // office entry. Use these coords as the primary source.
+      // FIX: Use api.postalpincode.in as the PRIMARY coordinate source.
+      // It returns accurate Latitude/Longitude directly for Indian pincodes,
+      // unlike Nominatim whose Indian coverage is too poor to be relied upon.
       const postalRes = await fetch(
         `https://api.postalpincode.in/pincode/${pincode}`,
       );
@@ -41,8 +42,8 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
       const state: string = postOffice.State;
 
       // ── Step 2: Extract coords from postal API response ────────────────────
-      // The postalpincode.in API returns Latitude and Longitude on each
-      // PostOffice entry. Use them directly — no external geocoding needed.
+      // postalpincode.in returns Latitude and Longitude on each PostOffice
+      // entry. Use them directly — no external geocoding call needed.
       let lat: number | null = null;
       let lng: number | null = null;
 
@@ -65,7 +66,7 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
         }
       }
 
-      // ── Step 3: Nominatim fallback (only if postal API lacked coords) ──────
+      // ── Step 3: Nominatim pincode fallback (only if postal API lacked coords)
       if (lat === null || lng === null) {
         try {
           const geoRes = await fetch(
@@ -78,7 +79,25 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
             lng = parseFloat(geoData[0].lon);
           }
         } catch {
-          // Nominatim failed — proceed without coords
+          // Nominatim pincode lookup failed — try city+state next
+        }
+      }
+
+      // ── Step 4: Nominatim city+state fallback (last resort) ──────────────
+      if ((lat === null || lng === null) && city && state) {
+        try {
+          const q = encodeURIComponent(`${city}, ${state}, India`);
+          const geoRes2 = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${q}&countrycodes=in&format=json&limit=1`,
+            { headers: { "Accept-Language": "en" } },
+          );
+          const geoData2 = await geoRes2.json();
+          if (geoData2?.[0]) {
+            lat = parseFloat(geoData2[0].lat);
+            lng = parseFloat(geoData2[0].lon);
+          }
+        } catch {
+          // All geocoding attempts failed — proceed without coords
         }
       }
 
@@ -88,8 +107,8 @@ export const LocationPrompt = ({ onClose }: LocationPromptProps) => {
         pincode,
         city,
         state,
-        lat: lat ?? undefined,
-        lng: lng ?? undefined,
+        lat: lat,       // null when coords unavailable — explicit, never undefined
+        lng: lng,       // null when coords unavailable — explicit, never undefined
       });
 
       if (lat !== null && lng !== null) {

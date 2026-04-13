@@ -24,8 +24,6 @@ const Page = async ({ params, searchParams }: Props) => {
       category,
       subcategory,
       limit: DEFAULT_LIMIT,
-      customerLat: null,
-      customerLng: null,
     }),
   );
 

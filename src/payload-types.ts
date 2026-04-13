@@ -152,11 +152,11 @@ export interface User {
     state?: string | null;
     pincode?: string | null;
     /**
-     * Latitude coordinate
+     * ✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.
      */
     lat?: number | null;
     /**
-     * Longitude coordinate
+     * ✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.
      */
     lng?: number | null;
   };
@@ -206,19 +206,19 @@ export interface Tenant {
     city: string;
     state: string;
     /**
-     * Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled.
+     * 6-digit Indian pincode — also auto-filled when you use the picker above.
      */
     pincode: string;
     /**
-     * Latitude — auto-filled from pincode. Do not edit manually.
+     * ✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.
      */
     lat?: number | null;
     /**
-     * Longitude — auto-filled from pincode. Do not edit manually.
+     * ✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.
      */
     lng?: number | null;
     /**
-     * Maximum delivery radius in kilometres (default 50 km)
+     * Maximum delivery radius in kilometres (default 50 km). Customers outside this radius won't see your products.
      */
     serviceRadiusKm?: number | null;
   };
@@ -362,14 +362,26 @@ export interface Order {
    */
   quantity?: number | null;
   status: 'pending' | 'confirmed' | 'processing' | 'dispatched' | 'delivered' | 'cancelled' | 'refunded';
-  deliveryAddress: {
-    fullName: string;
-    phone: string;
-    addressLine1: string;
+  /**
+   * Auto-calculated when the seller accepts the order. Can be manually adjusted.
+   */
+  estimatedDeliveryDate?: string | null;
+  /**
+   * Timestamp auto-set when seller accepts the order.
+   */
+  acceptedAt?: string | null;
+  /**
+   * Required when cancelling an order. Visible to the customer in the app.
+   */
+  cancelReason?: string | null;
+  deliveryAddress?: {
+    fullName?: string | null;
+    phone?: string | null;
+    addressLine1?: string | null;
     addressLine2?: string | null;
-    city: string;
-    state: string;
-    pincode: string;
+    city?: string | null;
+    state?: string | null;
+    pincode?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -657,6 +669,9 @@ export interface OrdersSelect<T extends boolean = true> {
   cartSessionId?: T;
   quantity?: T;
   status?: T;
+  estimatedDeliveryDate?: T;
+  acceptedAt?: T;
+  cancelReason?: T;
   deliveryAddress?:
     | T
     | {

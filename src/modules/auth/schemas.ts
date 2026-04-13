@@ -3,6 +3,7 @@ import { z } from "zod";
 export const registerSellerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(3, "Password must be at least 3 characters"),
+  pincode: z.string().regex(/^\d{6}$/, "Enter a valid 6-digit Indian pincode"),
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")

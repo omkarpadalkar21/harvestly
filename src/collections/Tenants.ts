@@ -17,38 +17,66 @@ export const Tenants: CollectionConfig = {
   },
   // ─── HOOKS ────────────────────────────────────────────────────────────────
   hooks: {
-    /**
-     * FIX (Bug 2 & 9): Auto-geocode lat/lng from pincode whenever the
-     * location block changes (including updates from the Payload admin panel).
-     * Previously there was NO hook, so sellers updating city/state from the
-     * dashboard never had their coordinates updated.
-     */
     beforeChange: [
       async ({ data, originalDoc }) => {
         const newPincode = data?.location?.pincode;
         const oldPincode = originalDoc?.location?.pincode;
 
-        // Only geocode when the pincode field is actually present in the
-        // incoming data AND has changed (or is being set for the first time).
-        const pincodeChanged =
-          newPincode &&
-          /^\d{6}$/.test(newPincode) &&
-          newPincode !== oldPincode;
+        // ── LOG: always print the incoming location data so we can diagnose ──
+        console.log('[Tenants.beforeChange] incoming data.location =', JSON.stringify(data?.location ?? null));
 
-        if (pincodeChanged) {
+        // ── PRIORITY 1: GPS / picker already set coordinates ──────────────────
+        // The LocationPickerField writes lat/lng directly into the form before
+        // Save is clicked. If valid coords arrive in `data`, trust them as-is
+        // and skip geocoding entirely — do NOT overwrite with pincode geocoding.
+        const incomingLat = data?.location?.lat;
+        const incomingLng = data?.location?.lng;
+        const incomingHasValidCoords =
+          incomingLat != null &&
+          incomingLng != null &&
+          !isNaN(Number(incomingLat)) &&
+          !isNaN(Number(incomingLng));
+
+        if (incomingHasValidCoords) {
+          // Coordinates already set (either by GPS picker or pincode picker).
+          // Preserve them exactly; do not call any geocoding API.
+          console.log(
+            `[Tenants.beforeChange] ✅ lat/lng present and valid (${incomingLat}, ${incomingLng}) — skipping geocode, persisting as-is.`,
+          );
+          return data;
+        }
+
+        // ── PRIORITY 2: Fallback — geocode from pincode ────────────────────────
+        // Only reach here when the incoming data has NO coordinates
+        // (e.g. seller typed into the raw pincode field without using the picker).
+        const hasValidPincode = newPincode && /^\d{6}$/.test(newPincode);
+        const pincodeChanged = newPincode !== oldPincode;
+        const coordsMissingOnDoc =
+          originalDoc?.location?.lat == null ||
+          originalDoc?.location?.lng == null;
+
+        const shouldGeocode =
+          hasValidPincode && (pincodeChanged || coordsMissingOnDoc);
+
+        if (shouldGeocode) {
+          console.log(
+            `[Tenants.beforeChange] No coords in data — geocoding pincode ${newPincode}.`,
+          );
           const geo = await geocodePincodeServer(newPincode);
           if (geo) {
             data.location = {
               ...data.location,
               lat: geo.lat,
               lng: geo.lng,
-              // If the admin left city/state blank, backfill from geocoder
               city: data.location?.city || geo.city,
               state: data.location?.state || geo.state,
             };
           } else {
-            // Geocoding failed — explicitly null out stale coords so the
-            // falsy-zero bug (Bug 1) does not accidentally re-surface.
+            // Geocoding failed — null out coords so the filter hides this
+            // seller rather than showing them to everyone.
+            console.warn(
+              `[Tenants.beforeChange] Geocoding failed for pincode ${newPincode} — nulling coords.`,
+            );
             data.location = {
               ...data.location,
               lat: null,
@@ -61,11 +89,6 @@ export const Tenants: CollectionConfig = {
       },
     ],
 
-    /**
-     * FIX (Bug 3): Invalidate the in-memory LRU tenant cache whenever a
-     * tenant document changes so the geo-filter always uses fresh coordinates.
-     * Previously invalidateTenantCache() existed but was never called.
-     */
     afterChange: [
       ({ doc }) => {
         invalidateTenantCache(doc.subdomain as string);
@@ -129,6 +152,17 @@ export const Tenants: CollectionConfig = {
       type: "group",
       label: "Shop Location",
       fields: [
+        // ── GPS / Pincode picker UI (type:'ui' is the correct Payload v3 way) ──
+        {
+          name: "_locationPicker",
+          type: "ui",
+          admin: {
+            components: {
+              Field:
+                "@/components/admin/location-picker-field#LocationPickerField",
+            },
+          },
+        },
         {
           name: "address",
           type: "text",
@@ -153,28 +187,28 @@ export const Tenants: CollectionConfig = {
           defaultValue: "000000",
           admin: {
             description:
-              "Enter a valid 6-digit Indian pincode. Coordinates (lat/lng) will be auto-filled.",
+              "6-digit Indian pincode — also auto-filled when you use the picker above.",
           },
         },
         {
           name: "lat",
           type: "number",
-          // FIX (Bug 9): Default is null, NOT 0. Zero is a real coordinate
-          // (Gulf of Guinea) and is falsy in JavaScript, which previously caused
-          // all newly-registered sellers to bypass geo-filtering entirely.
-          defaultValue: null,
+          // NOT hidden — hidden fields may not be initialized in Payload's
+          // form state, causing useField().setValue() to be a silent no-op.
+          // Visible fields are guaranteed to be in form state.
           admin: {
-            description: "Latitude — auto-filled from pincode. Do not edit manually.",
-            readOnly: true,
+            description:
+              "✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.",
+            style: { opacity: 0.5, pointerEvents: 'none' },
           },
         },
         {
           name: "lng",
           type: "number",
-          defaultValue: null,
           admin: {
-            description: "Longitude — auto-filled from pincode. Do not edit manually.",
-            readOnly: true,
+            description:
+              "✅ Auto-filled by the GPS / pincode picker above. Do not edit manually.",
+            style: { opacity: 0.5, pointerEvents: 'none' },
           },
         },
         {
@@ -184,7 +218,8 @@ export const Tenants: CollectionConfig = {
           min: 1,
           max: 500,
           admin: {
-            description: "Maximum delivery radius in kilometres (default 50 km)",
+            description:
+              "Maximum delivery radius in kilometres (default 50 km). Customers outside this radius won't see your products.",
           },
         },
       ],
